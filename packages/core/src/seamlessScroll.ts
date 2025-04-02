@@ -112,6 +112,20 @@ export const createSeamlessScroll = (
     }
   };
 
+  // 更新配置
+  const updateOptions = (newOptions: Partial<ScrollOptions>) => {
+    // 合并新选项到当前配置
+    Object.assign(config, newOptions);
+
+    // 更新尺寸和滚动需求
+    updateSize();
+
+    // 如果改变了滚动方向，可能需要重置滚动位置
+    if (newOptions.direction !== undefined) {
+      resetScroll();
+    }
+  };
+
   // 应用滚动位置
   const applyScrollPosition = () => {
     if (!content) return;
@@ -379,6 +393,7 @@ export const createSeamlessScroll = (
     reset: resetScroll,
     forceScroll,
     updateSize,
+    updateOptions,
   };
 
   // 初始化

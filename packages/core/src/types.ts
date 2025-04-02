@@ -57,6 +57,8 @@ export interface ScrollMethods {
   forceScroll: () => void;
   /* 更新尺寸 */
   updateSize: () => void;
+  /* 更新配置 */
+  updateOptions: (options: Partial<ScrollOptions>) => void;
 }
 
 export interface ScrollEvents {
