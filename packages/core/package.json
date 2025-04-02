@@ -2,6 +2,13 @@
   "name": "@seamless-scroll/core",
   "version": "0.1.0",
   "description": "Core functionality for seamless scrolling",
+  "author": "yeyunwen",
+  "license": "MIT",
+  "keywords": [
+    "scroll",
+    "seamless",
+    "core"
+  ],
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -20,13 +27,6 @@
     "dev": "tsup src/index.ts --watch",
     "build": "tsup src/index.ts --format cjs,esm --dts"
   },
-  "keywords": [
-    "scroll",
-    "seamless",
-    "core"
-  ],
-  "author": "",
-  "license": "MIT",
   "devDependencies": {
     "tsup": "^8.4.0"
   }

@@ -1,10 +1,31 @@
 {
-  "description": "",
-  "scripts": {
-    "build:core": "pnpm run build --filter @seamless-scroll/core"
-  },
+  "private": true,
+  "description": "seamless scroll",
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.6.5"
+  "packageManager": "pnpm@10.6.5",
+  "scripts": {
+    "build:core": "pnpm run build --filter @seamless-scroll/core",
+    "typecheck": "tsc --noEmit",
+    "typecheck:core": "tsc --noEmit -p packages/core",
+    "lint": "eslint packages/**/src --ext .ts,.tsx,.js,.jsx,.vue",
+    "format": "prettier --write --cache .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^9.23.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "picocolors": "^1.1.1",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.29.0"
+  }
 }

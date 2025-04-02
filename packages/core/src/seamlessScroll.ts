@@ -37,7 +37,7 @@ export const createSeamlessScroll = (
   realList: HTMLElement,
   cloneList: HTMLElement | null,
   options: ScrollOptions = {},
-  events: ScrollEvents = {}
+  events: ScrollEvents = {},
 ): SeamlessScrollResult => {
   // 合并默认配置和用户配置
   const config: Required<ScrollOptions> = { ...DEFAULT_OPTIONS, ...options };
@@ -81,12 +81,8 @@ export const createSeamlessScroll = (
 
     const isVertical = config.direction === "vertical";
 
-    state.containerSize = isVertical
-      ? container.clientHeight
-      : container.clientWidth;
-    state.contentSize = isVertical
-      ? realList.clientHeight
-      : realList.clientWidth;
+    state.containerSize = isVertical ? container.clientHeight : container.clientWidth;
+    state.contentSize = isVertical ? realList.clientHeight : realList.clientWidth;
 
     updateScrollNeeded();
 
@@ -282,12 +278,7 @@ export const createSeamlessScroll = (
     config.forceScrolling = true;
     updateScrollNeeded();
 
-    if (
-      !wasForced &&
-      state.isScrollNeeded &&
-      !state.isScrolling &&
-      !state.isHovering
-    ) {
+    if (!wasForced && state.isScrollNeeded && !state.isScrolling && !state.isHovering) {
       startScroll();
     }
   };
@@ -324,12 +315,7 @@ export const createSeamlessScroll = (
     // 监听内容变化
     observer = new MutationObserver(() => {
       updateSize();
-      if (
-        state.isScrollNeeded &&
-        !state.isScrolling &&
-        !state.isHovering &&
-        !state.isPaused
-      ) {
+      if (state.isScrollNeeded && !state.isScrolling && !state.isHovering && !state.isPaused) {
         startScroll();
       }
     });
