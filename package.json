@@ -1,0 +1,10 @@
+{
+  "description": "",
+  "scripts": {
+    "build:core": "pnpm run build --filter @seamless-scroll/core"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.6.5"
+}
