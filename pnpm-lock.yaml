@@ -54,6 +54,22 @@ importers:
         specifier: workspace:*
         version: link:../../packages/core
 
+  examples/vue:
+    dependencies:
+      '@seamless-scroll/vue':
+        specifier: workspace:*
+        version: link:../../packages/vue
+      vue:
+        specifier: ^3.5.13
+        version: 3.5.13(typescript@5.8.2)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^5.2.3
+        version: 5.2.3(vite@6.2.4(@types/node@22.14.0)(yaml@2.7.1))(vue@3.5.13(typescript@5.8.2))
+      typescript:
+        specifier: ^5.8.2
+        version: 5.8.2
+
   packages/core:
     devDependencies:
       happy-dom:
