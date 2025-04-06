@@ -1,0 +1,40 @@
+{
+  "name": "@seamless-scroll/vue",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    },
+    "./*": "./*"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "scroll",
+    "seamless",
+    "vue3"
+  ],
+  "author": "yeyunwen",
+  "license": "ISC",
+  "packageManager": "pnpm@10.6.5",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@seamless-scroll/core": "workspace:*"
+  },
+  "devDependencies": {
+    "vue": "^3.5.13"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.13"
+  }
+}

@@ -7,7 +7,9 @@
   "license": "ISC",
   "packageManager": "pnpm@10.6.5",
   "scripts": {
+    "dev:vue": "pnpm --filter @seamless-scroll/vue dev",
     "build:core": "pnpm --filter @seamless-scroll/core build",
+    "build:vue": "pnpm --filter @seamless-scroll/vue build",
     "typecheck": "tsc --noEmit",
     "typecheck:core": "tsc --noEmit -p packages/core",
     "lint": "eslint packages/**/src --ext .ts,.tsx,.js,.jsx,.vue",
@@ -21,14 +23,18 @@
     ]
   },
   "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-vue": "^5.2.3",
     "eslint": "^9.23.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.0",
     "picocolors": "^1.1.1",
     "prettier": "^3.5.3",
+    "rimraf": "^5.0.10",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.29.0",
     "vite": "^6.2.4",
+    "vite-plugin-dts": "^4.5.3",
     "vitest": "^3.1.1"
   }
 }
