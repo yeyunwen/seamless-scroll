@@ -35,6 +35,20 @@ const createReadOnlyState = <T extends ScrollState>(state: T): Readonly<T> => {
   });
 };
 
+const useStateWithCallback = (
+  initialState: ScrollState,
+  onStateChange?: (state: ScrollState) => void,
+) => {
+  const state = { ...initialState };
+  const dispatch = (newState: Partial<ScrollState>) => {
+    Object.assign(state, newState);
+    if (onStateChange) {
+      onStateChange(state);
+    }
+  };
+  return [state, dispatch] as const;
+};
+
 /**
  * 创建无缝滚动实例
  * @param container 容器元素
@@ -52,20 +66,23 @@ export const createSeamlessScroll = (
   cloneList: HTMLElement | null,
   options: ScrollOptions = {},
   events: ScrollEvents = {},
+  onStateChange?: (state: ScrollState) => void,
 ): SeamlessScrollResult => {
   // 合并默认配置和用户配置
   const config: Required<ScrollOptions> = { ...DEFAULT_OPTIONS, ...options };
 
   // 状态
-  const state: ScrollState = {
+  const initialState: ScrollState = {
     isScrolling: false,
     isPaused: false,
     isHovering: false,
+    isScrollNeeded: false,
     scrollDistance: 0,
     contentSize: 0,
     containerSize: 0,
-    isScrollNeeded: false,
   };
+
+  const [state, setState] = useStateWithCallback(initialState, onStateChange);
   const readOnlyState = createReadOnlyState(state);
 
   // 定时器ID
@@ -82,14 +99,12 @@ export const createSeamlessScroll = (
   // 计算是否需要滚动
   const updateScrollNeeded = () => {
     if (config.forceScrolling) {
-      state.isScrollNeeded = true;
-      console.log("22");
-
+      setState({ isScrollNeeded: true });
       return;
     }
 
     // 只有当内容超出容器时才需要滚动
-    state.isScrollNeeded = state.contentSize > state.containerSize;
+    setState({ isScrollNeeded: state.contentSize > state.containerSize });
   };
 
   // 更新尺寸
@@ -98,8 +113,10 @@ export const createSeamlessScroll = (
 
     const isVertical = config.direction === "vertical";
 
-    state.containerSize = isVertical ? container.clientHeight : container.clientWidth;
-    state.contentSize = isVertical ? realList.clientHeight : realList.clientWidth;
+    setState({
+      containerSize: isVertical ? container.clientHeight : container.clientWidth,
+      contentSize: isVertical ? realList.clientHeight : realList.clientWidth,
+    });
 
     updateScrollNeeded();
 
@@ -155,7 +172,7 @@ export const createSeamlessScroll = (
 
   // 停止滚动
   const stopScroll = () => {
-    state.isScrolling = false;
+    setState({ isScrolling: false });
 
     if (pauseTimer) {
       clearTimeout(pauseTimer);
@@ -177,7 +194,7 @@ export const createSeamlessScroll = (
   const startScroll = () => {
     if (!state.isScrollNeeded || state.isScrolling) return;
 
-    state.isScrolling = true;
+    setState({ isScrolling: true });
 
     // 使用 requestAnimationFrame 进行滚动动画
     let startTime: number | null = null;
@@ -209,7 +226,7 @@ export const createSeamlessScroll = (
       const step = getStepSize(frameDelta);
 
       // 计算当前滚动位置
-      state.scrollDistance += step;
+      setState({ scrollDistance: state.scrollDistance + step });
 
       // 触发滚动事件
       if (events.onScroll) {
@@ -227,7 +244,7 @@ export const createSeamlessScroll = (
         // 动画完成，检查是否需要重置滚动位置
         if (state.scrollDistance >= state.contentSize) {
           // 无缝重置：不直接跳回0，而是减去一个内容高度/宽度，这样看起来是连续的
-          state.scrollDistance = state.scrollDistance - state.contentSize;
+          setState({ scrollDistance: state.scrollDistance - state.contentSize });
           applyScrollPosition();
         }
 
@@ -271,7 +288,7 @@ export const createSeamlessScroll = (
   const pauseScroll = () => {
     if (!state.isScrolling) return;
 
-    state.isPaused = true;
+    setState({ isPaused: true });
     lastScrollPosition = state.scrollDistance;
 
     stopScroll();
@@ -281,8 +298,7 @@ export const createSeamlessScroll = (
   const resumeScroll = () => {
     if (!state.isPaused) return;
 
-    state.isPaused = false;
-    state.scrollDistance = lastScrollPosition;
+    setState({ isPaused: false, scrollDistance: lastScrollPosition });
 
     if (state.isScrollNeeded && !state.isHovering) {
       startScroll();
@@ -292,7 +308,7 @@ export const createSeamlessScroll = (
   // 重置滚动
   const resetScroll = () => {
     stopScroll();
-    state.scrollDistance = 0;
+    setState({ scrollDistance: 0 });
     applyScrollPosition();
     updateSize();
 
@@ -316,7 +332,7 @@ export const createSeamlessScroll = (
 
   // 鼠标移入处理
   const handleMouseEnter = () => {
-    state.isHovering = true;
+    setState({ isHovering: true });
 
     if (config.hoverPause && state.isScrolling) {
       pauseScroll();
@@ -325,7 +341,7 @@ export const createSeamlessScroll = (
 
   // 鼠标移出处理
   const handleMouseLeave = () => {
-    state.isHovering = false;
+    setState({ isHovering: false });
 
     if (config.hoverPause && state.isPaused) {
       resumeScroll();
@@ -385,10 +401,12 @@ export const createSeamlessScroll = (
     }
 
     // 重置状态
-    state.isScrolling = false;
-    state.isPaused = false;
-    state.isHovering = false;
-    state.scrollDistance = 0;
+    setState({
+      isScrolling: false,
+      isPaused: false,
+      isHovering: false,
+      scrollDistance: 0,
+    });
 
     // 重置样式
     if (content) {
@@ -400,7 +418,7 @@ export const createSeamlessScroll = (
   const methods: ScrollMethods = {
     start: () => {
       if (!state.isScrolling) {
-        state.isPaused = false;
+        setState({ isPaused: false });
         startScroll();
       }
     },

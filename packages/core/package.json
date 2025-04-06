@@ -25,11 +25,13 @@
   ],
   "scripts": {
     "dev": "tsup src/index.ts --watch",
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "clean": "rimraf dist",
+    "build": "pnpm clean && tsup src/index.ts --format cjs,esm --dts",
     "test": "vitest"
   },
   "devDependencies": {
     "happy-dom": "^17.4.4",
+    "rimraf": "^5.0.10",
     "tsup": "^8.4.0"
   }
 }
