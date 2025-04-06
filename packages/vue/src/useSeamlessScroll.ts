@@ -143,31 +143,18 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
       cloneListRef.value,
       scrollOptions.value,
       {
-        onScroll: (distance) => {
-          scrollState.value.scrollDistance = distance;
-          // 可以在这里触发自定义事件
-        },
+        // onScroll: (distance) => {
+        //   scrollState.value.scrollDistance = distance;
+        //   // 可以在这里触发自定义事件
+        // },
         onItemClick: () => {
           // 可以在这里触发自定义点击事件
         },
       },
-    );
-
-    // 更新状态
-    watch(
-      () => scrollInstance?.state,
-      (newState) => {
-        if (newState) {
-          scrollState.value = {
-            isScrolling: newState.isScrolling,
-            isPaused: newState.isPaused,
-            isHovering: newState.isHovering,
-            scrollDistance: newState.scrollDistance,
-            isScrollNeeded: newState.isScrollNeeded,
-          };
-        }
+      (state) => {
+        console.log("state", state);
+        scrollState.value = state;
       },
-      { deep: true },
     );
   };
 

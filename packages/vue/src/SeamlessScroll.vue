@@ -45,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from "vue";
 import { useSeamlessScroll, SeamlessScrollProps } from "./useSeamlessScroll";
 
 const props = withDefaults(defineProps<SeamlessScrollProps>(), {
@@ -76,6 +77,10 @@ const { containerRef, contentRef, realListRef, cloneListRef, state, styles, meth
 const handleItemClick = (item: any, index: number) => {
   emit("itemClick", item, index);
 };
+
+watch(state, (newState) => {
+  console.log("SeamlessScroll newState", newState);
+});
 
 // 暴露方法
 defineExpose({
