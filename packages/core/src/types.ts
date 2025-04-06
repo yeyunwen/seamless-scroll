@@ -7,8 +7,6 @@ export interface ScrollOptions {
   speed?: number;
   /* 每次滚动动画的持续时间（毫秒） */
   duration?: number;
-  /* CSS 过渡时间函数 */
-  timingFunction?: string;
   /* 每次滚动后的暂停时间（毫秒） */
   pauseTime?: number;
   /* 是否在鼠标悬停时暂停 */
@@ -69,7 +67,7 @@ export interface ScrollEvents {
 }
 
 export interface SeamlessScrollResult {
-  state: ScrollState;
+  state: Readonly<ScrollState>;
   methods: ScrollMethods;
   destroy: () => void;
 }

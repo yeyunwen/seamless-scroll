@@ -11,7 +11,6 @@ const DEFAULT_OPTIONS: Required<ScrollOptions> = {
   direction: "vertical",
   speed: 50,
   duration: 500,
-  timingFunction: "linear",
   pauseTime: 2000,
   hoverPause: true,
   autoScroll: true,
@@ -19,6 +18,21 @@ const DEFAULT_OPTIONS: Required<ScrollOptions> = {
   forceScrolling: false,
   rowHeight: 40,
   columnWidth: 200,
+};
+
+// 创建带警告的只读状态
+const createReadOnlyState = <T extends ScrollState>(state: T): Readonly<T> => {
+  return new Proxy(state, {
+    get: (target, prop) => target[prop as keyof T],
+    set: (_, prop) => {
+      console.warn(
+        `You cannot modify the state directly .${String(
+          prop,
+        )}Use methods [updateOptions] to update the state`,
+      );
+      return false;
+    },
+  });
 };
 
 /**
@@ -52,6 +66,7 @@ export const createSeamlessScroll = (
     containerSize: 0,
     isScrollNeeded: false,
   };
+  const readOnlyState = createReadOnlyState(state);
 
   // 定时器ID
   let scrollTimer: ReturnType<typeof setTimeout> | null = null;
@@ -68,6 +83,8 @@ export const createSeamlessScroll = (
   const updateScrollNeeded = () => {
     if (config.forceScrolling) {
       state.isScrollNeeded = true;
+      console.log("22");
+
       return;
     }
 
@@ -401,7 +418,7 @@ export const createSeamlessScroll = (
 
   // 返回状态、方法和销毁函数
   return {
-    state,
+    state: readOnlyState,
     methods,
     destroy,
   };
