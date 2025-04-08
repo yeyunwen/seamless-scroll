@@ -1,49 +1,3 @@
-<template>
-  <div ref="containerRef" class="seamless-scroll-container" :style="styles.container">
-    <div
-      v-if="data.length > 0"
-      ref="contentRef"
-      class="seamless-scroll-content"
-      :style="styles.content"
-    >
-      <div ref="realListRef" class="seamless-scroll-list" :style="styles.list">
-        <div
-          v-for="(item, index) in data"
-          class="seamless-scroll-item"
-          :key="`real-${index}`"
-          :style="styles.item"
-          @click="handleItemClick(item, index)"
-        >
-          <slot :item="item" :index="index">
-            {{ JSON.stringify(item) }}
-          </slot>
-        </div>
-      </div>
-      <div
-        v-if="state.isScrollNeeded"
-        ref="cloneListRef"
-        class="seamless-scroll-list"
-        :style="styles.list"
-      >
-        <div
-          v-for="(item, index) in data"
-          class="seamless-scroll-item"
-          :key="`clone-${index}`"
-          :style="styles.item"
-          @click="handleItemClick(item, index)"
-        >
-          <slot :item="item" :index="index">
-            {{ JSON.stringify(item) }}
-          </slot>
-        </div>
-      </div>
-    </div>
-    <div v-else class="seamless-scroll-empty" :style="styles.empty">
-      <slot name="empty">无数据</slot>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { watch } from "vue";
 import { useSeamlessScroll, SeamlessScrollProps } from "./useSeamlessScroll";
@@ -70,17 +24,12 @@ const emit = defineEmits<{
 }>();
 
 // 使用滚动 hook
-const { containerRef, contentRef, realListRef, cloneListRef, state, styles, methods } =
-  useSeamlessScroll(props);
+const { containerRef, contentRef, realListRef, state, styles, methods } = useSeamlessScroll(props);
 
 // 处理项目点击
 const handleItemClick = (item: any, index: number) => {
   emit("itemClick", item, index);
 };
-
-watch(state, (newState) => {
-  console.log("SeamlessScroll newState", newState);
-});
 
 // 暴露方法
 defineExpose({
@@ -91,5 +40,52 @@ defineExpose({
   reset: methods.reset,
   forceScroll: methods.forceScroll,
   updateSize: methods.updateSize,
+  calculateMinClones: methods.calculateMinClones,
 });
 </script>
+
+<template>
+  <div ref="containerRef" class="seamless-scroll-container" :style="styles.container">
+    <div
+      v-if="data.length > 0"
+      ref="contentRef"
+      class="seamless-scroll-content"
+      :style="styles.content"
+    >
+      <div ref="realListRef" class="seamless-scroll-list" :style="styles.list">
+        <div
+          v-for="(item, index) in data"
+          class="seamless-scroll-item"
+          :key="`real-${index}`"
+          :style="styles.item"
+          @click="handleItemClick(item, index)"
+        >
+          <slot :item="item" :index="index">
+            {{ JSON.stringify(item) }}
+          </slot>
+        </div>
+      </div>
+      <div
+        v-for="cloneIndex in methods.calculateMinClones()"
+        :key="`clone-${cloneIndex}`"
+        class="seamless-scroll-list"
+        :style="styles.list"
+      >
+        <div
+          v-for="(item, index) in data"
+          class="seamless-scroll-item"
+          :key="`clone-${cloneIndex}-${index}`"
+          :style="styles.item"
+          @click="handleItemClick(item, index)"
+        >
+          <slot :item="item" :index="index">
+            {{ JSON.stringify(item) }}
+          </slot>
+        </div>
+      </div>
+    </div>
+    <div v-else class="seamless-scroll-empty" :style="styles.empty">
+      <slot name="empty">无数据</slot>
+    </div>
+  </div>
+</template>

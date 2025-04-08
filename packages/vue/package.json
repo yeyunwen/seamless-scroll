@@ -1,7 +1,15 @@
 {
   "name": "@seamless-scroll/vue",
   "version": "0.1.0",
-  "description": "",
+  "description": "Vue3 component for seamless scrolling",
+  "keywords": [
+    "scroll",
+    "seamless",
+    "vue3"
+  ],
+  "author": "yeyunwen",
+  "license": "ISC",
+  "packageManager": "pnpm@10.6.5",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -16,14 +24,6 @@
   "files": [
     "dist"
   ],
-  "keywords": [
-    "scroll",
-    "seamless",
-    "vue3"
-  ],
-  "author": "yeyunwen",
-  "license": "ISC",
-  "packageManager": "pnpm@10.6.5",
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build"

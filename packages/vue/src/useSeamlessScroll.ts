@@ -51,7 +51,6 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
   const containerRef = ref<HTMLElement | null>(null);
   const contentRef = ref<HTMLElement | null>(null);
   const realListRef = ref<HTMLElement | null>(null);
-  const cloneListRef = ref<HTMLElement | null>(null);
 
   // 实例引用
   let scrollInstance: SeamlessScrollResult | null = null;
@@ -140,7 +139,6 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
       containerRef.value,
       contentRef.value,
       realListRef.value,
-      cloneListRef.value,
       scrollOptions.value,
       {
         // onScroll: (distance) => {
@@ -152,7 +150,6 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
         },
       },
       (state) => {
-        console.log("state", state);
         scrollState.value = state;
       },
     );
@@ -210,6 +207,7 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
     updateSize: () => scrollInstance?.methods.updateSize(),
     updateOptions: (newOptions: Partial<ScrollOptions>) =>
       scrollInstance?.methods.updateOptions(newOptions),
+    calculateMinClones: () => scrollInstance?.methods.calculateMinClones(),
   };
 
   return {
@@ -217,7 +215,6 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
     containerRef,
     contentRef,
     realListRef,
-    cloneListRef,
     // styles
     styles,
     // state
