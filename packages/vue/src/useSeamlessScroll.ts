@@ -168,25 +168,6 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
       },
       { deep: true },
     );
-
-    // 监听数据变化
-    watch(
-      () => props.data,
-      () => {
-        // vue 的nextTick是微任务，这里通过宏任务延迟更新
-        // 确保 DOM 已更新
-        setTimeout(() => {
-          if (scrollInstance) {
-            scrollInstance.methods.updateSize();
-
-            if (scrollInstance.state.isScrollNeeded && !scrollInstance.state.isScrolling) {
-              scrollInstance.methods.start();
-            }
-          }
-        }, 50);
-      },
-      { deep: true },
-    );
   });
 
   onBeforeUnmount(() => {
