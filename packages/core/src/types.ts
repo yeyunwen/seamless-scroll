@@ -57,6 +57,7 @@ export interface ScrollMethods {
   updateSize: () => void;
   /* 更新配置 */
   updateOptions: (options: Partial<ScrollOptions>) => void;
+  calculateMinClones: () => number;
 }
 
 export interface ScrollEvents {

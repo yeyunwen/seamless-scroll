@@ -35,35 +35,44 @@ const createReadOnlyState = <T extends ScrollState>(state: T): Readonly<T> => {
   });
 };
 
+const throttle = (fn: (...args: any[]) => void, delay: number) => {
+  let lastCall = 0;
+  return function (this: any, ...args: any[]) {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      return fn.apply(this, args);
+    }
+  };
+};
+
 const useStateWithCallback = (
   initialState: ScrollState,
   onStateChange?: (state: ScrollState) => void,
 ) => {
   const state = { ...initialState };
+
+  const throttledOnStateChange = onStateChange
+    ? throttle((newState: ScrollState) => {
+        // 返回一个新对象，避免vue watch无法监听
+        onStateChange({ ...newState });
+      }, 16) // 约60fps的刷新率
+    : undefined;
+
   const dispatch = (newState: Partial<ScrollState>) => {
     Object.assign(state, newState);
-    if (onStateChange) {
-      onStateChange(state);
+    if (throttledOnStateChange) {
+      throttledOnStateChange({ ...state });
     }
   };
+
   return [state, dispatch] as const;
 };
 
-/**
- * 创建无缝滚动实例
- * @param container 容器元素
- * @param content 内容元素
- * @param realList 实际列表元素
- * @param cloneList 克隆列表元素
- * @param options 配置选项
- * @param events 事件回调
- * @returns 滚动实例结果
- */
 export const createSeamlessScroll = (
   container: HTMLElement,
   content: HTMLElement,
   realList: HTMLElement,
-  cloneList: HTMLElement | null,
   options: ScrollOptions = {},
   events: ScrollEvents = {},
   onStateChange?: (state: ScrollState) => void,
@@ -96,6 +105,28 @@ export const createSeamlessScroll = (
   // 记录暂停前的位置
   let lastScrollPosition = 0;
 
+  // 计算最小克隆列表数量
+  const calculateMinClones = () => {
+    if (!container || !realList) return 0;
+
+    const isVertical = config.direction === "vertical";
+    const containerSize = isVertical ? container.clientHeight : container.clientWidth;
+    const itemSize = isVertical ? config.rowHeight : config.columnWidth;
+
+    // 计算容器能容纳多少个项目
+    const itemsPerView = Math.ceil(containerSize / itemSize);
+
+    // 计算当前列表中的项目数量
+    const currentItems = realList.children.length;
+
+    // 如果当前项目数量不足以填满容器，计算需要克隆的次数
+    if (currentItems < itemsPerView) {
+      return Math.ceil(itemsPerView / currentItems);
+    }
+
+    return 1;
+  };
+
   // 计算是否需要滚动
   const updateScrollNeeded = () => {
     if (config.forceScrolling) {
@@ -104,7 +135,13 @@ export const createSeamlessScroll = (
     }
 
     // 只有当内容超出容器时才需要滚动
-    setState({ isScrollNeeded: state.contentSize > state.containerSize });
+    const isScrollNeeded = state.contentSize > state.containerSize;
+    setState({ isScrollNeeded });
+
+    // 如果不需要滚动，重置位置
+    if (!isScrollNeeded) {
+      resetScroll();
+    }
   };
 
   // 更新尺寸
@@ -119,31 +156,6 @@ export const createSeamlessScroll = (
     });
 
     updateScrollNeeded();
-
-    // 如果有克隆列表，设置其显示/隐藏并同步内容
-    if (cloneList) {
-      cloneList.style.display = state.isScrollNeeded ? "flex" : "none";
-
-      // 确保克隆列表与实际列表内容相同 (只在必要时更新)
-      if (
-        cloneList.children.length !== realList.children.length ||
-        cloneList.innerHTML !== realList.innerHTML
-      ) {
-        cloneList.innerHTML = realList.innerHTML;
-      }
-
-      // 保持克隆列表的样式与实际列表一致
-      cloneList.className = realList.className;
-
-      // 确保flex方向与滚动方向一致
-      const flexDirection = isVertical ? "column" : "row";
-      if (realList.style.flexDirection !== flexDirection) {
-        realList.style.flexDirection = flexDirection;
-      }
-      if (cloneList.style.flexDirection !== flexDirection) {
-        cloneList.style.flexDirection = flexDirection;
-      }
-    }
   };
 
   // 更新配置
@@ -226,28 +238,26 @@ export const createSeamlessScroll = (
       const step = getStepSize(frameDelta);
 
       // 计算当前滚动位置
-      setState({ scrollDistance: state.scrollDistance + step });
+      const newScrollDistance = state.scrollDistance + step;
 
+      // 检查是否需要重置位置
+      if (newScrollDistance >= state.contentSize) {
+        // 无缝重置：不直接跳回0，而是减去一个内容高度/宽度，这样看起来是连续的
+        setState({ scrollDistance: newScrollDistance - state.contentSize });
+      } else {
+        setState({ scrollDistance: newScrollDistance });
+      }
+      applyScrollPosition();
       // 触发滚动事件
       if (events.onScroll) {
         events.onScroll(state.scrollDistance, config.direction);
       }
-
-      // 应用滚动位置到内容元素
-      applyScrollPosition();
 
       // 根据配置的持续时间决定何时结束此次动画
       if (elapsed < config.duration) {
         // 继续动画
         rafId = requestAnimationFrame(animate);
       } else {
-        // 动画完成，检查是否需要重置滚动位置
-        if (state.scrollDistance >= state.contentSize) {
-          // 无缝重置：不直接跳回0，而是减去一个内容高度/宽度，这样看起来是连续的
-          setState({ scrollDistance: state.scrollDistance - state.contentSize });
-          applyScrollPosition();
-        }
-
         // 暂停一段时间后继续滚动
         const continueScrolling = () => {
           // 清除并重新开始新的动画循环
@@ -310,7 +320,6 @@ export const createSeamlessScroll = (
     stopScroll();
     setState({ scrollDistance: 0 });
     applyScrollPosition();
-    updateSize();
 
     if (config.autoScroll && state.isScrollNeeded && !state.isHovering) {
       scrollTimer = setTimeout(() => {
@@ -429,6 +438,7 @@ export const createSeamlessScroll = (
     forceScroll,
     updateSize,
     updateOptions,
+    calculateMinClones,
   };
 
   // 初始化
