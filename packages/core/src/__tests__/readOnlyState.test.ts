@@ -6,7 +6,6 @@ describe("ReadOnly State Tests", () => {
   let container: HTMLElement;
   let content: HTMLElement;
   let realList: HTMLElement;
-  let cloneList: HTMLElement;
   let scrollInstance: SeamlessScrollResult;
 
   // 模拟console.warn
@@ -18,7 +17,6 @@ describe("ReadOnly State Tests", () => {
     container = document.createElement("div");
     content = document.createElement("div");
     realList = document.createElement("div");
-    cloneList = document.createElement("div");
 
     // 设置元素尺寸
     Object.defineProperty(container, "clientHeight", { value: 200 });
@@ -37,7 +35,6 @@ describe("ReadOnly State Tests", () => {
       container,
       content,
       realList,
-      cloneList,
       { autoScroll: false }, // 关闭自动滚动以便测试
     );
 
