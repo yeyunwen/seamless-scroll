@@ -30,8 +30,12 @@
       </div>
 
       <div class="config-group">
-        <label>行高/列宽: {{ rowHeight }}px</label>
+        <label>行高: {{ rowHeight }}px</label>
         <input type="range" v-model.number="rowHeight" min="20" max="80" step="5" />
+      </div>
+      <div class="config-group">
+        <label>列宽: {{ columnWidth }}px</label>
+        <input type="range" v-model.number="columnWidth" min="120" max="400" step="5" />
       </div>
 
       <div class="actions">
@@ -54,8 +58,7 @@
           :speed="speed"
           :pause-time="pauseTime"
           :hover-pause="pauseOnHover"
-          :row-height="rowHeight"
-          :column-width="rowHeight * 3"
+          force-scrolling
           @itemClick="handleItemClick"
         >
           <template #default="{ item, index }">
@@ -72,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { CSSProperties, onMounted, ref } from "vue";
 import { SeamlessScroll } from "@seamless-scroll/vue";
 
 // 配置选项
@@ -81,6 +84,7 @@ const speed = ref(50);
 const pauseTime = ref(2000);
 const pauseOnHover = ref(true);
 const rowHeight = ref(40);
+const columnWidth = ref(200);
 const scrollRef = ref();
 
 // 数据
@@ -113,10 +117,11 @@ const handleItemClick = (item: any, index: number) => {
 };
 
 // 项目样式
-const getItemStyle = (item: any) => {
+const getItemStyle = (item: any): CSSProperties => {
   return {
     borderLeftColor: item.color,
-    ...(direction.value === "horizontal" ? { width: `${rowHeight.value * 3}px` } : {}),
+    width: `${columnWidth.value}px`,
+    height: `${rowHeight.value}px`,
   };
 };
 
@@ -133,6 +138,17 @@ const activateTestMode = () => {
   pauseTime.value = 500; // 更短的暂停时间
   resetScroll(); // 重置并使用新设置
 };
+
+onMounted(() => {
+  setTimeout(() => {
+    listData.value = [
+      { id: 7, title: "项目 7", color: "#03a9f4" },
+      { id: 8, title: "项目 8", color: "#00bcd4" },
+      { id: 9, title: "项目 9", color: "#009688" },
+      { id: 10, title: "项目 10", color: "#4caf50" },
+    ];
+  }, 500);
+});
 </script>
 
 <style>
@@ -221,15 +237,7 @@ h2 {
   border: 1px solid #ddd;
   border-radius: 4px;
   margin-bottom: 20px;
-}
-
-.scroll-container.vertical {
   height: 200px;
-}
-
-.scroll-container.horizontal {
-  height: 80px;
-  width: 100%;
 }
 
 .list-item {
@@ -243,13 +251,6 @@ h2 {
 
 .list-item:hover {
   background: #f5f5f5;
-}
-
-.scroll-container.horizontal .list-item {
-  padding: 0 10px;
-  justify-content: center;
-  text-align: center;
-  height: 100%;
 }
 
 .clicked-info {
