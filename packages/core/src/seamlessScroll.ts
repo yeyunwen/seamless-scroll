@@ -7,14 +7,14 @@ import {
 } from "./types";
 
 // 默认配置
-const DEFAULT_OPTIONS: Required<ScrollOptions> = {
+export const DEFAULT_OPTIONS: Required<ScrollOptions> = {
   direction: "vertical",
   speed: 50,
   duration: 500,
   pauseTime: 2000,
+  step: 0,
   hoverPause: true,
   autoScroll: true,
-  step: 0,
   forceScrolling: false,
 };
 

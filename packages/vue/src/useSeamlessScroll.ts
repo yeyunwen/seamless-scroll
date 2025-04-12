@@ -1,48 +1,19 @@
 import {
-  ScrollDirection,
   SeamlessScrollResult,
   ScrollOptions,
   createSeamlessScroll,
   ScrollMethods,
 } from "@seamless-scroll/core";
+import type { SeamlessScrollProps, SeamlessScrollStyles } from "@seamless-scroll/shared";
 import { computed, CSSProperties, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
-export interface SeamlessScrollProps {
-  /** 数据源 */
-  data: any[];
-  /** 滚动方向 vertical（上下）或 horizontal（左右） */
-  direction?: ScrollDirection;
-  // 容器高度（像素或CSS值）
-  containerHeight?: number | string;
-  // 容器宽度（像素或CSS值）
-  containerWidth?: number | string;
-  // 滚动速度（像素/秒）
-  speed?: number;
-  // 每次滚动动画的持续时间（毫秒）
-  duration?: number;
-  // CSS 过渡时间函数
-  timingFunction?: string;
-  // 每次滚动后的暂停时间（毫秒）
-  pauseTime?: number;
-  // 是否在鼠标悬停时暂停
-  hoverPause?: boolean;
-  // 是否自动开始滚动
-  autoScroll?: boolean;
-  // 滚动步长（每次滚动的像素数），如果为0则自动计算
-  step?: number;
-  // 是否强制滚动（即使内容未超出容器）
-  forceScrolling?: boolean;
-}
+// 扩展 SeamlessScrollProps 以支持 Vue 特定的样式类型
+export type VueSeamlessScrollProps = SeamlessScrollProps<CSSProperties>;
 
-export interface SeamlessScrollStyles {
-  container: CSSProperties;
-  content: CSSProperties;
-  list: CSSProperties;
-  item: CSSProperties;
-  empty: CSSProperties;
-}
+// SeamlessScroll 组件 style
+export type VueSeamlessScrollStyles = SeamlessScrollStyles<CSSProperties>;
 
-export const useSeamlessScroll = (props: SeamlessScrollProps) => {
+export const useSeamlessScroll = (props: VueSeamlessScrollProps) => {
   // 引用DOM元素
   const containerRef = ref<HTMLElement | null>(null);
   const contentRef = ref<HTMLElement | null>(null);
@@ -76,7 +47,7 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
   });
 
   // 集中所有样式逻辑
-  const styles = computed<SeamlessScrollStyles>(() => {
+  const styles = computed<VueSeamlessScrollStyles>(() => {
     const isVertical = props.direction === "vertical";
 
     return {
@@ -132,6 +103,7 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
       realListRef.value,
       scrollOptions.value,
       {
+        // TODO: 完善
         // onScroll: (distance) => {
         //   scrollState.value.scrollDistance = distance;
         //   // 可以在这里触发自定义事件
@@ -192,6 +164,5 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
     state: scrollState,
     // methods
     methods,
-    isInitialized: !!scrollInstance,
   };
 };

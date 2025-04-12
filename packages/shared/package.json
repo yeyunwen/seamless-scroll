@@ -1,0 +1,24 @@
+{
+  "name": "@seamless-scroll/shared",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "keywords": [],
+  "author": "yeyunwen",
+  "license": "ISC",
+  "packageManager": "pnpm@10.6.5",
+  "scripts": {
+    "dev": "tsup src/index.ts --watch",
+    "clean": "rimraf dist",
+    "build": "pnpm clean && tsup src/index.ts --format cjs,esm --dts"
+  },
+  "dependencies": {
+    "@seamless-scroll/core": "workspace:*"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.10",
+    "tsup": "^8.4.0"
+  }
+}

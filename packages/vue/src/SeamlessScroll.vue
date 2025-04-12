@@ -1,25 +1,17 @@
 <script setup lang="ts">
-import { watch } from "vue";
-import { useSeamlessScroll, SeamlessScrollProps } from "./useSeamlessScroll";
+import { DEFAULT_OPTIONS } from "@seamless-scroll/core";
+import { useSeamlessScroll, type VueSeamlessScrollProps } from "./useSeamlessScroll";
 
-const props = withDefaults(defineProps<SeamlessScrollProps>(), {
-  direction: "vertical",
+const props = withDefaults(defineProps<VueSeamlessScrollProps>(), {
+  ...DEFAULT_OPTIONS,
   containerHeight: "100%",
   containerWidth: "100%",
-  speed: 50,
-  duration: 500,
-  pauseTime: 2000,
-  hoverPause: true,
-  autoScroll: true,
-  step: 0,
-  rowHeight: 40,
-  columnWidth: 200,
-  forceScrolling: false,
 });
 
 // 定义自定义事件
 const emit = defineEmits<{
   (e: "scroll", distance: number, direction: string): void;
+  // TODO: item 类型优化
   (e: "itemClick", item: any, index: number): void;
 }>();
 
@@ -51,7 +43,7 @@ defineExpose({
       class="seamless-scroll-content"
       :style="styles.content"
     >
-      <div ref="realListRef" class="seamless-scroll-list" :style="styles.list">
+      <div ref="realListRef" class="seamless-scroll-real-list" :style="styles.list">
         <div
           v-for="(item, index) in data"
           class="seamless-scroll-item"
@@ -67,7 +59,7 @@ defineExpose({
       <div
         v-for="cloneIndex in state.minClones"
         :key="`clone-${cloneIndex}`"
-        class="seamless-scroll-list seamless-clone-list"
+        class="seamless-scroll-clone-list"
         :style="styles.list"
       >
         <div

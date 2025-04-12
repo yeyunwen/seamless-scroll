@@ -2,7 +2,7 @@ export type ScrollDirection = "vertical" | "horizontal";
 
 export interface ScrollOptions {
   /* 滚动方向：vertical（上下）或 horizontal（左右） */
-  direction?: "vertical" | "horizontal";
+  direction?: ScrollDirection;
   /* 滚动速度（像素/秒） */
   speed?: number;
   /* 每次滚动动画的持续时间（毫秒） */
@@ -34,6 +34,7 @@ export interface ScrollState {
   containerSize: number;
   /* 是否需要滚动 */
   isScrollNeeded: boolean;
+  /* 最小克隆数量 */
   minClones: number;
 }
 
@@ -59,6 +60,7 @@ export interface ScrollMethods {
 export interface ScrollEvents {
   /* 滚动事件 */
   onScroll?: (distance: number, direction: ScrollDirection) => void;
+  // TODO: item 类型优化
   /* 点击事件 */
   onItemClick?: (item: any, index: number) => void;
 }
