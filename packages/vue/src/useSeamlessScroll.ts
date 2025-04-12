@@ -30,10 +30,6 @@ export interface SeamlessScrollProps {
   autoScroll?: boolean;
   // 滚动步长（每次滚动的像素数），如果为0则自动计算
   step?: number;
-  // 垂直滚动时的行高（像素）
-  rowHeight?: number;
-  // 水平滚动时的列宽（像素）
-  columnWidth?: number;
   // 是否强制滚动（即使内容未超出容器）
   forceScrolling?: boolean;
 }
@@ -62,6 +58,7 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
     isHovering: false,
     scrollDistance: 0,
     isScrollNeeded: false,
+    minClones: 0,
   });
 
   // 将属性转换为核心库选项
@@ -74,8 +71,6 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
       hoverPause: props.hoverPause,
       autoScroll: props.autoScroll,
       step: props.step,
-      rowHeight: props.rowHeight,
-      columnWidth: props.columnWidth,
       forceScrolling: props.forceScrolling,
     };
   });
@@ -106,14 +101,10 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
       },
       list: {
         display: "flex",
-        flexDirection: isVertical ? "column" : "row",
-        minWidth: "100%",
-        minHeight: "100%",
+        flexDirection: "column",
       },
       item: {
         boxSizing: "border-box",
-        height: isVertical ? `${props.rowHeight}px` : "100%",
-        width: isVertical ? "100%" : `${props.columnWidth}px`,
       },
       empty: {
         display: "flex",
@@ -188,7 +179,6 @@ export const useSeamlessScroll = (props: SeamlessScrollProps) => {
     updateSize: () => scrollInstance?.methods.updateSize(),
     updateOptions: (newOptions: Partial<ScrollOptions>) =>
       scrollInstance?.methods.updateOptions(newOptions),
-    calculateMinClones: () => scrollInstance?.methods.calculateMinClones(),
   };
 
   return {

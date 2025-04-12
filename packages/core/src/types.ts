@@ -2,7 +2,7 @@ export type ScrollDirection = "vertical" | "horizontal";
 
 export interface ScrollOptions {
   /* 滚动方向：vertical（上下）或 horizontal（左右） */
-  direction?: ScrollDirection;
+  direction?: "vertical" | "horizontal";
   /* 滚动速度（像素/秒） */
   speed?: number;
   /* 每次滚动动画的持续时间（毫秒） */
@@ -17,10 +17,6 @@ export interface ScrollOptions {
   step?: number;
   /* 是否强制滚动（即使内容未超出容器） */
   forceScrolling?: boolean;
-  /* 垂直滚动时的行高（像素） */
-  rowHeight?: number;
-  /* 水平滚动时的列宽（像素） */
-  columnWidth?: number;
 }
 
 export interface ScrollState {
@@ -38,6 +34,7 @@ export interface ScrollState {
   containerSize: number;
   /* 是否需要滚动 */
   isScrollNeeded: boolean;
+  minClones: number;
 }
 
 export interface ScrollMethods {
@@ -57,7 +54,6 @@ export interface ScrollMethods {
   updateSize: () => void;
   /* 更新配置 */
   updateOptions: (options: Partial<ScrollOptions>) => void;
-  calculateMinClones: () => number;
 }
 
 export interface ScrollEvents {

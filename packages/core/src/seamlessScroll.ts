@@ -16,8 +16,6 @@ const DEFAULT_OPTIONS: Required<ScrollOptions> = {
   autoScroll: true,
   step: 0,
   forceScrolling: false,
-  rowHeight: 40,
-  columnWidth: 200,
 };
 
 // 创建带警告的只读状态
@@ -89,6 +87,7 @@ export const createSeamlessScroll = (
     scrollDistance: 0,
     contentSize: 0,
     containerSize: 0,
+    minClones: 1,
   };
 
   const [state, setState] = useStateWithCallback(initialState, onStateChange);
@@ -100,31 +99,22 @@ export const createSeamlessScroll = (
   let rafId: number | null = null;
 
   // 观察者
-  let observer: MutationObserver | null = null;
+  let observer: ResizeObserver | null = null;
 
   // 记录暂停前的位置
   let lastScrollPosition = 0;
 
   // 计算最小克隆列表数量
-  const calculateMinClones = () => {
-    if (!container || !realList) return 0;
-
-    const isVertical = config.direction === "vertical";
-    const containerSize = isVertical ? container.clientHeight : container.clientWidth;
-    const itemSize = isVertical ? config.rowHeight : config.columnWidth;
-
-    // 计算容器能容纳多少个项目
-    const itemsPerView = Math.ceil(containerSize / itemSize);
-
-    // 计算当前列表中的项目数量
-    const currentItems = realList.children.length;
-
-    // 如果当前项目数量不足以填满容器，计算需要克隆的次数
-    if (currentItems < itemsPerView) {
-      return Math.ceil(itemsPerView / currentItems);
+  const updateMinClones = () => {
+    let minClones: number;
+    if (!container || !realList) {
+      minClones = 0;
+    } else {
+      minClones = Math.ceil(state.containerSize / state.contentSize);
     }
-
-    return 1;
+    setState({
+      minClones,
+    });
   };
 
   // 计算是否需要滚动
@@ -155,6 +145,7 @@ export const createSeamlessScroll = (
       contentSize: isVertical ? realList.clientHeight : realList.clientWidth,
     });
 
+    updateMinClones();
     updateScrollNeeded();
   };
 
@@ -369,21 +360,13 @@ export const createSeamlessScroll = (
     updateSize();
 
     // 监听内容变化
-    observer = new MutationObserver(() => {
+    observer = new ResizeObserver(() => {
       updateSize();
-      if (state.isScrollNeeded && !state.isScrolling && !state.isHovering && !state.isPaused) {
-        startScroll();
-      }
     });
 
-    if (realList) {
-      observer.observe(realList, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        characterData: true,
-      });
-    }
+    // 同时监听容器和内容区
+    observer.observe(container);
+    observer.observe(realList);
 
     if (config.autoScroll && state.isScrollNeeded) {
       scrollTimer = setTimeout(() => {
@@ -438,7 +421,6 @@ export const createSeamlessScroll = (
     forceScroll,
     updateSize,
     updateOptions,
-    calculateMinClones,
   };
 
   // 初始化

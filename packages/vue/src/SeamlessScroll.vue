@@ -40,7 +40,6 @@ defineExpose({
   reset: methods.reset,
   forceScroll: methods.forceScroll,
   updateSize: methods.updateSize,
-  calculateMinClones: methods.calculateMinClones,
 });
 </script>
 
@@ -66,9 +65,9 @@ defineExpose({
         </div>
       </div>
       <div
-        v-for="cloneIndex in methods.calculateMinClones()"
+        v-for="cloneIndex in state.minClones"
         :key="`clone-${cloneIndex}`"
-        class="seamless-scroll-list"
+        class="seamless-scroll-list seamless-clone-list"
         :style="styles.list"
       >
         <div
