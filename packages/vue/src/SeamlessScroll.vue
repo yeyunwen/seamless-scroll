@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { DEFAULT_OPTIONS } from "@seamless-scroll/core";
+import type { SeamlessScrollRef } from "@seamless-scroll/shared";
 import { useSeamlessScroll, type VueSeamlessScrollProps } from "./useSeamlessScroll";
 
+// 基本 props 定义
 const props = withDefaults(defineProps<VueSeamlessScrollProps>(), {
   ...DEFAULT_OPTIONS,
   containerHeight: "100%",
@@ -24,7 +26,7 @@ const handleItemClick = (item: any, index: number) => {
 };
 
 // 暴露方法
-defineExpose({
+defineExpose<SeamlessScrollRef>({
   start: methods.start,
   stop: methods.stop,
   pause: methods.pause,
