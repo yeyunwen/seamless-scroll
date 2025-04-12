@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "@vitejs/plugin-vue": "^5.2.3",
     "eslint": "^9.23.0",
     "husky": "^9.1.7",
