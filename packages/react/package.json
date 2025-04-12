@@ -1,0 +1,39 @@
+{
+  "name": "@seamless-scroll/react",
+  "version": "0.1.0",
+  "description": "React component for seamless scrolling",
+  "keywords": [
+    "scroll",
+    "seamless",
+    "react",
+    "component"
+  ],
+  "author": "yeyunwen",
+  "license": "MIT",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@seamless-scroll/core": "workspace:*",
+    "@seamless-scroll/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "vite-plugin-dts": "^4.5.3"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+  }
+}
