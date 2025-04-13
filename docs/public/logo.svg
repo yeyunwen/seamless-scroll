@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 背景 -->
+  <rect x="0" y="0" width="100" height="100" rx="8" fill="#4861AC" />
+
+  <!-- 滚动文档形象 -->
+  <g transform="translate(50, 50)">
+    <!-- 主文档 - 白色背景 -->
+    <rect x="-25" y="-30" width="50" height="60" rx="4" fill="white" />
+
+    <!-- 文档内容线条 -->
+    <rect x="-18" y="-23" width="36" height="5" rx="1" fill="#E6F0FF" />
+    <rect x="-18" y="-13" width="36" height="5" rx="1" fill="#E6F0FF" />
+    <rect x="-18" y="-3" width="36" height="5" rx="1" fill="#E6F0FF" />
+    <rect x="-18" y="7" width="25" height="5" rx="1" fill="#E6F0FF" />
+    <rect x="-18" y="17" width="20" height="5" rx="1" fill="#E6F0FF" />
+
+    <!-- 滚动箭头 -->
+    <path d="M-33 0 A40 40 0 0 0 33 0" stroke="white" stroke-width="3" stroke-linecap="round" stroke-dasharray="3,5"
+      fill="none" />
+
+    <path d="M-38 -8 L-33 0 L-28 -8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+      fill="none" />
+    <path d="M28 -8 L33 0 L38 -8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+      fill="none" />
+  </g>
+</svg>

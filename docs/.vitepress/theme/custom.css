@@ -1,0 +1,373 @@
+:root {
+  --vp-c-brand: #4861ac;
+  --vp-c-brand-light: #5a75d3;
+  --vp-c-brand-lighter: #7186d9;
+  --vp-c-brand-dark: #3a4e8c;
+  --vp-c-brand-darker: #2c3c6b;
+
+  --vp-c-sponsor: #4861ac;
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #4338ca 0%, #6366f1 100%);
+
+  --vp-home-hero-image-background-image: none;
+  --vp-home-hero-image-filter: none;
+
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-bg: var(--vp-c-brand);
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-hover-bg: var(--vp-c-brand-dark);
+  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-active-bg: var(--vp-c-brand-darker);
+
+  --vp-c-bg-nav: rgba(255, 255, 255, 0.95);
+}
+
+.dark {
+  --vp-c-bg-nav: rgba(16, 16, 20, 0.95);
+}
+
+/* 首页布局调整 */
+.VPHero .image-container {
+  transform: none;
+  margin-top: 0;
+}
+
+.VPHero .image {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform: translateY(-20px);
+  transition: transform 0.5s ease;
+}
+
+.VPHero .image:hover {
+  transform: translateY(-30px);
+}
+
+.VPHero .main {
+  max-width: 1200px;
+  padding-top: 48px;
+}
+
+.VPFeature {
+  background-color: transparent;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 24px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.07);
+  border-color: rgba(72, 97, 172, 0.2);
+}
+
+.dark .VPFeature {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .VPFeature:hover {
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+  border-color: rgba(72, 97, 172, 0.3);
+}
+
+.VPFeature .icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  background-color: rgba(72, 97, 172, 0.1);
+  color: var(--vp-c-brand);
+  margin-bottom: 16px;
+}
+
+.dark .VPFeature .icon {
+  background-color: rgba(72, 97, 172, 0.2);
+}
+
+.VPFeature .title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  color: #1f2937;
+}
+
+.dark .VPFeature .title {
+  color: #e5e7eb;
+}
+
+.VPFeature .details {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #6b7280;
+}
+
+.dark .VPFeature .details {
+  color: #9ca3af;
+}
+
+/* 代码样式优化 */
+.vp-doc div[class*="language-"] {
+  border-radius: 8px;
+}
+
+.vp-doc a {
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.vp-doc a:hover {
+  text-decoration: underline;
+}
+
+/* 示例样式 */
+.example-container {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.example-container:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 头部导航栏 */
+.VPNav {
+  border-bottom: 1px solid rgba(60, 60, 60, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dark .VPNav {
+  border-color: rgba(80, 80, 80, 0.2);
+}
+
+/* 滚动示例特定样式 */
+.example-scroll-container {
+  position: relative;
+}
+
+.example-controls button {
+  transition: background-color 0.2s ease;
+}
+
+/* 首页hero区域美化 */
+.VPHomeHero .name,
+.VPHomeHero .text {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.VPHomeHero .tagline {
+  font-size: 1.25rem;
+  color: #6b7280;
+  font-weight: 500;
+  margin-top: 1.5rem;
+}
+
+.VPHomeHero .actions {
+  margin-top: 2rem;
+}
+
+.VPHomeHero .VPButton {
+  padding: 0 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 38px;
+}
+
+.VPHomeHero .VPButton.brand {
+  box-shadow: 0 4px 6px rgba(72, 97, 172, 0.15);
+}
+
+.VPHomeHero .VPButton.brand:hover {
+  box-shadow: 0 4px 12px rgba(72, 97, 172, 0.2);
+}
+
+/* 文档页面美化 */
+.vp-doc h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.vp-doc h3 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.vp-doc p {
+  line-height: 1.7;
+  margin: 1rem 0;
+}
+
+.vp-doc a {
+  font-weight: 500;
+  color: var(--vp-c-brand);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.vp-doc a:hover {
+  color: var(--vp-c-brand-light);
+  text-decoration: underline;
+}
+
+.vp-doc code {
+  font-family: "SF Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 0.875em;
+  color: #6366f1;
+  background-color: rgba(99, 102, 241, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+}
+
+.dark .vp-doc code {
+  color: #a5b4fc;
+  background-color: rgba(165, 180, 252, 0.1);
+}
+
+/* 代码块美化 */
+.vp-doc div[class*="language-"] {
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .vp-doc div[class*="language-"] {
+  background-color: #1e293b;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.vp-doc pre {
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+}
+
+/* 表格样式 */
+.vp-doc table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .vp-doc table {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.vp-doc tr {
+  border-top: 1px solid #e5e7eb;
+}
+
+.dark .vp-doc tr {
+  border-top: 1px solid #374151;
+}
+
+.vp-doc tr:nth-child(2n) {
+  background-color: #f9fafb;
+}
+
+.dark .vp-doc tr:nth-child(2n) {
+  background-color: #1f2937;
+}
+
+.vp-doc th,
+.vp-doc td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.vp-doc th {
+  font-weight: 600;
+  background-color: #f3f4f6;
+}
+
+.dark .vp-doc th {
+  background-color: #111827;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .vp-doc div[class*="language-"] {
+    margin: 1.2rem -1.5rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .VPFeature {
+    padding: 20px !important;
+  }
+
+  .VPHomeHero .tagline {
+    font-size: 1rem;
+  }
+
+  .VPHomeHero .VPButton {
+    padding: 0 16px;
+    font-size: 0.875rem;
+    line-height: 34px;
+  }
+
+  .VPHero .image {
+    max-width: 300px;
+  }
+}
+
+/* logo动画 */
+.VPNavBarTitle .logo {
+  transition: transform 0.3s ease;
+}
+
+.VPNavBarTitle:hover .logo {
+  transform: scale(1.05);
+}
+
+/* 侧边栏美化 */
+.VPSidebar {
+  border-right: 1px solid rgba(60, 60, 60, 0.1);
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.dark .VPSidebar {
+  border-right: 1px solid rgba(82, 82, 89, 0.2);
+  background-color: rgba(16, 16, 20, 0.5);
+}
+
+.VPSidebarItem.level-1 .text {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.VPSidebarItem.level-2 .text {
+  font-weight: 500;
+  font-size: 0.9375rem;
+}
+
+.VPSidebarItem .link {
+  transition: color 0.2s;
+  padding: 5px 0;
+}
+
+.VPSidebarItem .link:hover {
+  color: var(--vp-c-brand);
+}
