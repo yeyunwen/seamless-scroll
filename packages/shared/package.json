@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "keywords": [],
   "author": "yeyunwen",
-  "license": "ISC",
+  "license": "MIT",
   "packageManager": "pnpm@10.6.5",
   "publishConfig": {
     "access": "public"

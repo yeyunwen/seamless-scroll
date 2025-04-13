@@ -8,7 +8,7 @@
     "vue3"
   ],
   "author": "yeyunwen",
-  "license": "ISC",
+  "license": "MIT",
   "packageManager": "pnpm@10.6.5",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
