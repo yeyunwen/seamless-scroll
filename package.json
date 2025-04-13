@@ -14,7 +14,10 @@
     "typecheck:core": "tsc --noEmit -p packages/core",
     "lint": "eslint packages/**/src --ext .ts,.tsx,.js,.jsx,.vue",
     "format": "prettier --write --cache .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docs:dev": "pnpm --filter docs dev ",
+    "docs:build": "pnpm --filter docs build ",
+    "docs:preview": "pnpm --filter docs preview "
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -37,6 +40,7 @@
     "typescript-eslint": "^8.29.0",
     "vite": "^6.2.4",
     "vite-plugin-dts": "^4.5.3",
+    "vitepress": "^1.0.0-rc.45",
     "vitest": "^3.1.1"
   }
 }

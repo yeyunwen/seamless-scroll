@@ -1,0 +1,67 @@
+name: 部署文档
+
+on:
+  # 每次推送到main分支时触发部署
+  push:
+    branches: [main]
+  # 允许手动触发部署
+  workflow_dispatch:
+
+# 设置GITHUB_TOKEN的权限，以便能够部署到GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同时只允许一个部署实例运行
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # 构建文档站点
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # 如果使用VitePress的最近更新功能则需要
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: 设置 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: 安装依赖
+        run: pnpm install
+
+      - name: 构建文档
+        run: pnpm docs:build
+
+      - name: 设置GitHub Pages
+        uses: actions/configure-pages@v3
+
+      - name: 上传构建结果
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: docs/.vitepress/dist
+
+  # 部署到GitHub Pages
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
