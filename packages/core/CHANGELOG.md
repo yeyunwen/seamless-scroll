@@ -1,5 +1,11 @@
 # @seamless-scroll/core
 
+## 0.1.1
+
+### Patch Changes
+
+- 240053b: 添加README.md
+
 ## 0.1.0
 
 ### Minor Changes

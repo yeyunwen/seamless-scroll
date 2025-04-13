@@ -1,5 +1,13 @@
 # @seamless-scroll/shared
 
+## 0.1.1
+
+### Patch Changes
+
+- 240053b: 添加README.md
+- Updated dependencies [240053b]
+  - @seamless-scroll/core@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes
