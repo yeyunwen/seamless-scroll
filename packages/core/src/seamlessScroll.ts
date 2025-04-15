@@ -1,10 +1,4 @@
-import {
-  ScrollEvents,
-  ScrollMethods,
-  ScrollOptions,
-  ScrollState,
-  SeamlessScrollResult,
-} from "./types";
+import { ScrollMethods, ScrollOptions, ScrollState, SeamlessScrollResult } from "./types";
 
 // 默认配置
 export const DEFAULT_OPTIONS: Required<ScrollOptions> = {
@@ -12,7 +6,6 @@ export const DEFAULT_OPTIONS: Required<ScrollOptions> = {
   speed: 50,
   duration: 500,
   pauseTime: 2000,
-  step: 0,
   hoverPause: true,
   autoScroll: true,
   forceScrolling: false,
@@ -72,7 +65,6 @@ export const createSeamlessScroll = (
   content: HTMLElement,
   realList: HTMLElement,
   options: ScrollOptions = {},
-  events: ScrollEvents = {},
   onStateChange?: (state: ScrollState) => void,
 ): SeamlessScrollResult => {
   // 合并默认配置和用户配置
@@ -239,10 +231,6 @@ export const createSeamlessScroll = (
         setState({ scrollDistance: newScrollDistance });
       }
       applyScrollPosition();
-      // 触发滚动事件
-      if (events.onScroll) {
-        events.onScroll(state.scrollDistance, config.direction);
-      }
 
       // 根据配置的持续时间决定何时结束此次动画
       if (elapsed < config.duration) {

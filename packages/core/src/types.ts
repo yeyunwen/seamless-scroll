@@ -13,8 +13,6 @@ export interface ScrollOptions {
   hoverPause?: boolean;
   /* 是否自动开始滚动 */
   autoScroll?: boolean;
-  /* 滚动步长（每次滚动的像素数），如果为0则自动计算 */
-  step?: number;
   /* 是否强制滚动（即使内容未超出容器） */
   forceScrolling?: boolean;
 }
@@ -55,14 +53,6 @@ export interface ScrollMethods {
   updateSize: () => void;
   /* 更新配置 */
   updateOptions: (options: Partial<ScrollOptions>) => void;
-}
-
-export interface ScrollEvents {
-  /* 滚动事件 */
-  onScroll?: (distance: number, direction: ScrollDirection) => void;
-  // TODO: item 类型优化
-  /* 点击事件 */
-  onItemClick?: (item: any, index: number) => void;
 }
 
 export interface SeamlessScrollResult {

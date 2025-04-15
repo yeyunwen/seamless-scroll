@@ -91,12 +91,11 @@ const handleItemClick = (item) => {
 | ----------------- | ------------------------------ | ------------ | ---------------------------------- |
 | `data`            | `Array<any>`                   | `[]`         | 要展示的数据列表                   |
 | `direction`       | `'vertical'` \| `'horizontal'` | `'vertical'` | 滚动方向                           |
-| `speed`           | `number`                       | `60`         | 滚动速度（像素/秒）                |
-| `duration`        | `number`                       | `1000`       | 每次滚动动画的持续时间（毫秒）     |
-| `pauseTime`       | `number`                       | `0`          | 每次滚动后的暂停时间（毫秒）       |
+| `speed`           | `number`                       | `50`         | 滚动速度（像素/秒）                |
+| `duration`        | `number`                       | `500`        | 每次滚动动画的持续时间（毫秒）     |
+| `pauseTime`       | `number`                       | `2000`       | 每次滚动后的暂停时间（毫秒）       |
 | `hoverPause`      | `boolean`                      | `true`       | 是否在鼠标悬停时暂停               |
 | `autoScroll`      | `boolean`                      | `true`       | 是否自动开始滚动                   |
-| `step`            | `number`                       | `0`          | 滚动步长，0表示自动计算            |
 | `forceScrolling`  | `boolean`                      | `false`      | 是否强制滚动（即使内容未超出容器） |
 | `containerHeight` | `string \| number`             | `'100%'`     | 容器高度                           |
 | `containerWidth`  | `string \| number`             | `'100%'`     | 容器宽度                           |
@@ -129,7 +128,6 @@ function useSeamlessScroll(props: {
   pauseTime?: number;
   hoverPause?: boolean;
   autoScroll?: boolean;
-  step?: number;
   forceScrolling?: boolean;
   containerHeight?: string | number;
   containerWidth?: string | number;
@@ -150,10 +148,10 @@ function useSeamlessScroll(props: {
 | `isScrolling`    | `boolean` | 是否正在滚动 |
 | `isPaused`       | `boolean` | 是否暂停     |
 | `isHovering`     | `boolean` | 鼠标是否悬停 |
-| `scrollDistance` | `number`  | 滚动距离     |
-| `contentSize`    | `number`  | 内容尺寸     |
-| `containerSize`  | `number`  | 容器尺寸     |
 | `isScrollNeeded` | `boolean` | 是否需要滚动 |
+| `scrollDistance` | `number`  | 滚动距离     |
+| `containerSize`  | `number`  | 容器尺寸     |
+| `contentSize`    | `number`  | 内容尺寸     |
 | `minClones`      | `number`  | 最小克隆数量 |
 
 **methods** - 控制方法对象，包含以下方法：
@@ -174,15 +172,22 @@ function useSeamlessScroll(props: {
 ### 监听滚动事件
 
 ```vue
+<template>
+  <SeamlessScroll :data="items" @scroll="handleScroll" @item-click="handleItemClick">
+    <template #default="{ item }">
+      <div class="scroll-item">{{ item.text }}</div>
+    </template>
+  </SeamlessScroll>
+</template>
+
 <script setup>
-const { state, methods } = useSeamlessScroll({
-  data: items.value,
-  direction: "vertical",
-  speed: 60,
-  onScroll: (distance, direction) => {
-    console.log(`滚动距离: ${distance}, 方向: ${direction}`);
-  },
-});
+const handleScroll = (distance, direction) => {
+  console.log(`滚动距离: ${distance}, 方向: ${direction}`);
+};
+
+const handleItemClick = (item, index) => {
+  console.log(`点击了项目: ${item.text}, 索引: ${index}`);
+};
 </script>
 ```
 

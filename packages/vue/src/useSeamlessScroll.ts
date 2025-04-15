@@ -1,19 +1,13 @@
 import {
-  SeamlessScrollResult,
-  ScrollOptions,
+  type SeamlessScrollResult,
+  type ScrollOptions,
+  type ScrollMethods,
   createSeamlessScroll,
-  ScrollMethods,
 } from "@seamless-scroll/core";
-import type { SeamlessScrollProps, SeamlessScrollStyles } from "@seamless-scroll/shared";
-import { computed, CSSProperties, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from "vue";
+import { HooksProps } from "./types";
 
-// 扩展 SeamlessScrollProps 以支持 Vue 特定的样式类型
-export type VueSeamlessScrollProps = SeamlessScrollProps<CSSProperties>;
-
-// SeamlessScroll 组件 style
-export type VueSeamlessScrollStyles = SeamlessScrollStyles<CSSProperties>;
-
-export const useSeamlessScroll = (props: VueSeamlessScrollProps) => {
+export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
   // 引用DOM元素
   const containerRef = ref<HTMLElement | null>(null);
   const contentRef = ref<HTMLElement | null>(null);
@@ -35,55 +29,13 @@ export const useSeamlessScroll = (props: VueSeamlessScrollProps) => {
   // 将属性转换为核心库选项
   const scrollOptions = computed((): ScrollOptions => {
     return {
-      direction: props.direction,
-      speed: props.speed,
-      duration: props.duration,
-      pauseTime: props.pauseTime,
-      hoverPause: props.hoverPause,
-      autoScroll: props.autoScroll,
-      step: props.step,
-      forceScrolling: props.forceScrolling,
-    };
-  });
-
-  // 集中所有样式逻辑
-  const styles = computed<VueSeamlessScrollStyles>(() => {
-    const isVertical = props.direction === "vertical";
-
-    return {
-      container: {
-        height:
-          typeof props.containerHeight === "number"
-            ? `${props.containerHeight}px`
-            : props.containerHeight,
-        width:
-          typeof props.containerWidth === "number"
-            ? `${props.containerWidth}px`
-            : props.containerWidth,
-        overflow: "hidden",
-        position: "relative",
-      },
-      content: {
-        display: "flex",
-        flexDirection: isVertical ? "column" : "row",
-        willChange: "transform",
-        position: "relative",
-        // transform由core控制，不在这里设置
-      },
-      list: {
-        display: "flex",
-        flexDirection: "column",
-      },
-      item: {
-        boxSizing: "border-box",
-      },
-      empty: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100%",
-        color: "#999",
-      },
+      direction: hooksProps.value.direction,
+      speed: hooksProps.value.speed,
+      duration: hooksProps.value.duration,
+      pauseTime: hooksProps.value.pauseTime,
+      hoverPause: hooksProps.value.hoverPause,
+      autoScroll: hooksProps.value.autoScroll,
+      forceScrolling: hooksProps.value.forceScrolling,
     };
   });
 
@@ -102,16 +54,6 @@ export const useSeamlessScroll = (props: VueSeamlessScrollProps) => {
       contentRef.value,
       realListRef.value,
       scrollOptions.value,
-      {
-        // TODO: 完善
-        // onScroll: (distance) => {
-        //   scrollState.value.scrollDistance = distance;
-        //   // 可以在这里触发自定义事件
-        // },
-        onItemClick: () => {
-          // 可以在这里触发自定义点击事件
-        },
-      },
       (state) => {
         scrollState.value = state;
       },
@@ -123,13 +65,30 @@ export const useSeamlessScroll = (props: VueSeamlessScrollProps) => {
 
     // 监听选项变化，需要重新初始化
     watch(
-      scrollOptions,
-      (newOptions) => {
+      [
+        () => hooksProps.value.autoScroll,
+        () => hooksProps.value.direction,
+        () => hooksProps.value.duration,
+        () => hooksProps.value.forceScrolling,
+        () => hooksProps.value.hoverPause,
+        () => hooksProps.value.pauseTime,
+        () => hooksProps.value.speed,
+      ],
+      ([autoScroll, direction, duration, forceScrolling, hoverPause, pauseTime, speed]) => {
         if (scrollInstance) {
+          // 创建正确的选项对象
+          const newOptions: Partial<ScrollOptions> = {
+            autoScroll,
+            direction,
+            duration,
+            forceScrolling,
+            hoverPause,
+            pauseTime,
+            speed,
+          };
           scrollInstance.methods.updateOptions(newOptions);
         }
       },
-      { deep: true },
     );
   });
 
@@ -158,8 +117,6 @@ export const useSeamlessScroll = (props: VueSeamlessScrollProps) => {
     containerRef,
     contentRef,
     realListRef,
-    // styles
-    styles,
     // state
     state: scrollState,
     // methods

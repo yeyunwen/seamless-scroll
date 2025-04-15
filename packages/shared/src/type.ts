@@ -1,4 +1,4 @@
-import type { ScrollOptions, ScrollDirection } from "@seamless-scroll/core";
+import type { ScrollOptions } from "@seamless-scroll/core";
 
 /* 框架特定的类型 */
 export interface SeamlessScrollProps<S = Record<string, any>> extends ScrollOptions {
@@ -12,8 +12,10 @@ export interface SeamlessScrollProps<S = Record<string, any>> extends ScrollOpti
   customClass?: string;
   /* 自定义样式 */
   style?: S;
-  /* 事件处理 */
-  onScroll?: (distance: number, direction: ScrollDirection) => void;
+  /**
+   * 项目点击事件处理
+   * 注意：此事件由框架层处理，不依赖于核心包
+   */
   onItemClick?: (item: any, index: number) => void;
 }
 

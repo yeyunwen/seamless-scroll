@@ -1,10 +1,7 @@
 import SeamlessScroll from "./SeamlessScroll.vue";
-import {
-  useSeamlessScroll,
-  type VueSeamlessScrollProps,
-  type VueSeamlessScrollStyles,
-} from "./useSeamlessScroll";
-import type { SeamlessScrollRef } from "@seamless-scroll/shared";
+import { useSeamlessScroll } from "./useSeamlessScroll";
 
+export type { SeamlessScrollRef } from "@seamless-scroll/shared";
+export type { ScrollDirection } from "@seamless-scroll/core";
+export type { VueSeamlessScrollStyles, VueSeamlessScrollProps } from "./types";
 export { SeamlessScroll, useSeamlessScroll };
-export type { VueSeamlessScrollProps, VueSeamlessScrollStyles, SeamlessScrollRef };
