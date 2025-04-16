@@ -1,5 +1,16 @@
 # @seamless-scroll/shared
 
+## 0.1.2
+
+### Patch Changes
+
+- 747e131: packages/core: 移除Events。
+  packages/vue: 优化类型定义，传值。
+- 1b67443: fix: 通过支持以函数获取 dom 的方式解决 core 包无法活动最新 dom 的问题，通过 setObserver 和 clearObeserver 解决 Observer观察无效 dom 的问题
+- Updated dependencies [747e131]
+- Updated dependencies [1b67443]
+  - @seamless-scroll/core@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
