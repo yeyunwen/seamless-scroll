@@ -41,6 +41,8 @@ export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
 
   // 初始化滚动
   const initScroll = () => {
+    console.log("initScorll");
+
     if (!containerRef.value || !contentRef.value || !realListRef.value) return;
 
     // 销毁可能存在的实例
@@ -50,9 +52,9 @@ export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
 
     // 创建新实例
     scrollInstance = createSeamlessScroll(
-      containerRef.value,
-      contentRef.value,
-      realListRef.value,
+      () => containerRef.value,
+      () => contentRef.value,
+      () => realListRef.value,
       scrollOptions.value,
       (state) => {
         scrollState.value = state;
@@ -110,6 +112,9 @@ export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
     updateSize: () => scrollInstance?.methods.updateSize(),
     updateOptions: (newOptions: Partial<ScrollOptions>) =>
       scrollInstance?.methods.updateOptions(newOptions),
+    setObserver: (container: HTMLElement, content: HTMLElement) =>
+      scrollInstance.methods.setObserver(container, content),
+    clearObeserver: () => scrollInstance?.methods.clearObeserver(),
   };
 
   return {

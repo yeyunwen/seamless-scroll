@@ -2,7 +2,7 @@
 import { DEFAULT_OPTIONS } from "@seamless-scroll/core";
 import type { SeamlessScrollRef } from "@seamless-scroll/shared";
 import { useSeamlessScroll } from "./useSeamlessScroll";
-import { computed } from "vue";
+import { computed, watch, nextTick } from "vue";
 import { HooksProps, VueSeamlessScrollProps, VueSeamlessScrollStyles } from "./types";
 
 // 基本 props 定义
@@ -79,6 +79,27 @@ const handleItemClick = (item: any, index: number) => {
   emit("itemClick", item, index);
 };
 
+watch(
+  () => props.data,
+  (newVal) => {
+    if (!newVal.length) {
+      methods.clearObeserver();
+    } else {
+      nextTick(() => {
+        methods.reset();
+        methods.updateSize();
+        // 重新设置 observer
+        const currentContainer = containerRef.value;
+        const currentRealList = realListRef.value;
+
+        if (currentContainer && currentRealList) {
+          methods.setObserver(currentContainer, currentRealList);
+        }
+      });
+    }
+  },
+);
+
 // 暴露方法
 defineExpose<SeamlessScrollRef>({
   start: methods.start,
@@ -88,6 +109,7 @@ defineExpose<SeamlessScrollRef>({
   reset: methods.reset,
   forceScroll: methods.forceScroll,
   updateSize: methods.updateSize,
+  setObserver: methods.setObserver,
 });
 </script>
 

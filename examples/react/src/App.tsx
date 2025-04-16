@@ -5,9 +5,10 @@ import {
   type ScrollDirection,
 } from "@seamless-scroll/react";
 import "../../shared/style.css";
-import { listData, getItemStyle } from "../../shared/index";
+import { listData as initialListData, ListItem, getItemStyle } from "../../shared/index";
 
 const App = () => {
+  const [listData, setListData] = useState<ListItem[]>(initialListData);
   const [direction, setDirection] = useState<ScrollDirection>("vertical");
   const [speed, setSpeed] = useState(50);
   const [pauseOnHover, setPauseOnHover] = useState(true);
@@ -18,7 +19,22 @@ const App = () => {
   // 滚动组件引用
   const scrollRef = useRef<SeamlessScrollRef>(null);
 
-  // 获取项目样式
+  const handleClearData = () => {
+    setListData([]);
+  };
+
+  const handleModifyData = () => {
+    setListData([
+      { id: 7, title: "项目 7", color: "#03a9f4" },
+      { id: 8, title: "项目 8", color: "#00bcd4" },
+      { id: 9, title: "项目 9", color: "#009688" },
+      { id: 10, title: "项目 10", color: "#4caf50" },
+    ]);
+  };
+
+  const handleReset = () => {
+    setListData(initialListData);
+  };
 
   return (
     <div className="app">
@@ -98,6 +114,12 @@ const App = () => {
           <button onClick={() => scrollRef.current?.resume()}>恢复</button>
           <button onClick={() => scrollRef.current?.reset()}>重置</button>
         </div>
+
+        <div className="actions">
+          <button onClick={handleClearData}>清空数据</button>
+          <button onClick={handleModifyData}>修改数据</button>
+          <button onClick={handleReset}>重置数据</button>
+        </div>
       </div>
 
       <div className="demo-section">
@@ -111,6 +133,7 @@ const App = () => {
             hoverPause={pauseOnHover}
             forceScrolling
             pauseTime={pauseTime}
+            emptyRender={"暂无数据"}
           >
             {({ item, index }) => (
               <div className="list-item" style={getItemStyle(item, columnWidth, rowHeight)}>

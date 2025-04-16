@@ -20,6 +20,6 @@ export const listData: ListItem[] = [
 // 获取项目样式
 export const getItemStyle = (item: ListItem, columnWidth: number, rowHeight: number) => ({
   borderLeft: `4px solid ${item.color}`,
-  width: columnWidth,
-  height: rowHeight,
+  width: `${columnWidth}px`,
+  height: `${rowHeight}px`,
 });

@@ -35,4 +35,5 @@ export interface SeamlessScrollRef {
   reset: () => void;
   forceScroll: () => void;
   updateSize: () => void;
+  setObserver: (container: HTMLElement, content: HTMLElement) => void;
 }

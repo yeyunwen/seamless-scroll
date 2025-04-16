@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import { SeamlessScroll } from "@seamless-scroll/vue";
 import "../../shared/style.css";
 import { type ListItem, listData as initListData, getItemStyle } from "../../shared/index";
@@ -45,16 +45,22 @@ const activateTestMode = () => {
   resetScroll(); // 重置并使用新设置
 };
 
-onMounted(() => {
-  setTimeout(() => {
-    listData.value = [
-      { id: 7, title: "项目 7", color: "#03a9f4" },
-      { id: 8, title: "项目 8", color: "#00bcd4" },
-      { id: 9, title: "项目 9", color: "#009688" },
-      { id: 10, title: "项目 10", color: "#4caf50" },
-    ];
-  }, 500);
-});
+const handleClearData = () => {
+  listData.value = [];
+};
+
+const handleModifyData = () => {
+  listData.value = [
+    { id: 7, title: "项目 7", color: "#03a9f4" },
+    { id: 8, title: "项目 8", color: "#00bcd4" },
+    { id: 9, title: "项目 9", color: "#009688" },
+    { id: 10, title: "项目 10", color: "#4caf50" },
+  ];
+};
+
+const handleReset = () => {
+  listData.value = initListData;
+};
 </script>
 
 <template>
@@ -104,6 +110,12 @@ onMounted(() => {
         <button @click="resumeScroll">恢复</button>
         <button @click="resetScroll">重置</button>
         <button @click="activateTestMode" class="test-btn">快速滚动测试</button>
+      </div>
+
+      <div class="actions">
+        <button @click="handleClearData">清空数据</button>
+        <button @click="handleModifyData">修改数据</button>
+        <button @click="handleReset">重置数据</button>
       </div>
     </div>
 

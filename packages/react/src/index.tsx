@@ -1,14 +1,7 @@
+import { useSeamlessScroll } from "./useSeamlessScroll";
 import SeamlessScroll from "./SeamlessScroll";
-import { useSeamlessScroll, type ReactSeamlessScrollProps } from "./useSeamlessScroll";
-import type { SeamlessScrollRef } from "@seamless-scroll/shared";
-import type { ScrollDirection } from "@seamless-scroll/core";
-import type { SeamlessScrollComponentProps, RenderProps } from "./SeamlessScroll";
 
-export { SeamlessScroll, useSeamlessScroll };
-export type {
-  ReactSeamlessScrollProps,
-  SeamlessScrollComponentProps,
-  SeamlessScrollRef,
-  RenderProps,
-  ScrollDirection,
-};
+export type { SeamlessScrollRef } from "@seamless-scroll/shared";
+export type { ScrollDirection } from "@seamless-scroll/core";
+export type { ReactSeamlessScrollProps, RenderProps, ReactSeamlessScrollStyles } from "./types";
+export { useSeamlessScroll, SeamlessScroll };

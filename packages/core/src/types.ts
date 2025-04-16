@@ -1,5 +1,8 @@
 export type ScrollDirection = "vertical" | "horizontal";
 
+// DOM 元素或获取 DOM 元素的函数
+export type ElementOrGetter = HTMLElement | (() => HTMLElement | null);
+
 export interface ScrollOptions {
   /* 滚动方向：vertical（上下）或 horizontal（左右） */
   direction?: ScrollDirection;
@@ -53,6 +56,10 @@ export interface ScrollMethods {
   updateSize: () => void;
   /* 更新配置 */
   updateOptions: (options: Partial<ScrollOptions>) => void;
+  /* 设置观察者 */
+  setObserver: (container: HTMLElement, content: HTMLElement) => void;
+  /* 清除观察者 */
+  clearObeserver: () => void;
 }
 
 export interface SeamlessScrollResult {

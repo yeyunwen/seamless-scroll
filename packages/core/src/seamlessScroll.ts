@@ -1,4 +1,10 @@
-import { ScrollMethods, ScrollOptions, ScrollState, SeamlessScrollResult } from "./types";
+import {
+  ElementOrGetter,
+  ScrollMethods,
+  ScrollOptions,
+  ScrollState,
+  SeamlessScrollResult,
+} from "./types";
 
 // 默认配置
 export const DEFAULT_OPTIONS: Required<ScrollOptions> = {
@@ -61,12 +67,25 @@ const useStateWithCallback = (
 };
 
 export const createSeamlessScroll = (
-  container: HTMLElement,
-  content: HTMLElement,
-  realList: HTMLElement,
+  containerEl: ElementOrGetter,
+  contentEl: ElementOrGetter,
+  realListEl: ElementOrGetter,
   options: ScrollOptions = {},
   onStateChange?: (state: ScrollState) => void,
 ): SeamlessScrollResult => {
+  // 创建获取 DOM 元素的函数
+  const getContainer = typeof containerEl === "function" ? containerEl : () => containerEl;
+  const getContent = typeof contentEl === "function" ? contentEl : () => contentEl;
+  const getRealList = typeof realListEl === "function" ? realListEl : () => realListEl;
+
+  // 创建 DOM 元素的引用获取器，而不是直接存储引用
+  // 这样每次使用时都会获取最新的引用，而不是使用闭包捕获的初始引用
+  const domRefs = {
+    getContainer: () => getContainer(),
+    getContent: () => getContent(),
+    getRealList: () => getRealList(),
+  };
+
   // 合并默认配置和用户配置
   const config: Required<ScrollOptions> = { ...DEFAULT_OPTIONS, ...options };
 
@@ -99,8 +118,11 @@ export const createSeamlessScroll = (
   // 计算最小克隆列表数量
   const updateMinClones = () => {
     let minClones: number;
-    if (!container || !realList) {
+    const { minClones: lastMinClones } = state;
+    if (!domRefs.getContainer() || !domRefs.getRealList()) {
       minClones = 0;
+    } else if (state.contentSize === 0) {
+      minClones = lastMinClones;
     } else {
       minClones = Math.ceil(state.containerSize / state.contentSize);
     }
@@ -128,13 +150,17 @@ export const createSeamlessScroll = (
 
   // 更新尺寸
   const updateSize = () => {
-    if (!container || !realList) return;
+    // 使用获取器函数获取最新引用
+    const currentContainer = domRefs.getContainer();
+    const currentRealList = domRefs.getRealList();
+
+    if (!currentContainer || !currentRealList) return;
 
     const isVertical = config.direction === "vertical";
 
     setState({
-      containerSize: isVertical ? container.clientHeight : container.clientWidth,
-      contentSize: isVertical ? realList.clientHeight : realList.clientWidth,
+      containerSize: isVertical ? currentContainer.clientHeight : currentContainer.clientWidth,
+      contentSize: isVertical ? currentRealList.clientHeight : currentRealList.clientWidth,
     });
 
     updateMinClones();
@@ -157,10 +183,11 @@ export const createSeamlessScroll = (
 
   // 应用滚动位置
   const applyScrollPosition = () => {
-    if (!content) return;
+    const currentContent = domRefs.getContent();
+    if (!currentContent) return;
 
     // 通过 CSS transform 实现平滑滚动
-    content.style.transform = `translate${
+    currentContent.style.transform = `translate${
       config.direction === "vertical" ? "Y" : "X"
     }(${-state.scrollDistance}px)`;
   };
@@ -336,30 +363,51 @@ export const createSeamlessScroll = (
     }
   };
 
+  const clearObeserver = () => {
+    if (observer) {
+      observer.disconnect();
+    }
+  };
+
+  // 设置观察者
+  const setObserver = (container: HTMLElement, content: HTMLElement) => {
+    // 如果已有观察者，先断开连接
+    if (observer) {
+      observer.disconnect();
+    }
+
+    // 创建新的观察者
+    observer = new ResizeObserver(() => {
+      updateSize();
+    });
+
+    // 观察容器和内容区
+    observer.observe(container);
+    observer.observe(content);
+  };
+
   // 初始化
   const initialize = () => {
     // 添加鼠标事件监听
-    if (container) {
-      container.addEventListener("mouseenter", handleMouseEnter);
-      container.addEventListener("mouseleave", handleMouseLeave);
+    const currentContainer = domRefs.getContainer();
+    if (currentContainer) {
+      currentContainer.addEventListener("mouseenter", handleMouseEnter);
+      currentContainer.addEventListener("mouseleave", handleMouseLeave);
     }
 
     // 更新尺寸并启动滚动
     updateSize();
 
-    // 监听内容变化
-    observer = new ResizeObserver(() => {
-      updateSize();
-    });
-
-    // 同时监听容器和内容区
-    observer.observe(container);
-    observer.observe(realList);
+    // 设置观察者
+    const currentRealList = domRefs.getRealList();
+    if (currentContainer && currentRealList) {
+      setObserver(currentContainer, currentRealList);
+    }
 
     if (config.autoScroll && state.isScrollNeeded) {
       scrollTimer = setTimeout(() => {
         startScroll();
-      }, 100);
+      }, 0);
     }
   };
 
@@ -369,9 +417,10 @@ export const createSeamlessScroll = (
     stopScroll();
 
     // 移除事件监听
-    if (container) {
-      container.removeEventListener("mouseenter", handleMouseEnter);
-      container.removeEventListener("mouseleave", handleMouseLeave);
+    const currentContainer = domRefs.getContainer();
+    if (currentContainer) {
+      currentContainer.removeEventListener("mouseenter", handleMouseEnter);
+      currentContainer.removeEventListener("mouseleave", handleMouseLeave);
     }
 
     // 断开观察者
@@ -389,19 +438,15 @@ export const createSeamlessScroll = (
     });
 
     // 重置样式
-    if (content) {
-      content.style.transform = "";
+    const currentContent = domRefs.getContent();
+    if (currentContent) {
+      currentContent.style.transform = "";
     }
   };
 
   // 暴露方法
   const methods: ScrollMethods = {
-    start: () => {
-      if (!state.isScrolling) {
-        setState({ isPaused: false });
-        startScroll();
-      }
-    },
+    start: startScroll,
     stop: stopScroll,
     pause: pauseScroll,
     resume: resumeScroll,
@@ -409,6 +454,8 @@ export const createSeamlessScroll = (
     forceScroll,
     updateSize,
     updateOptions,
+    setObserver,
+    clearObeserver,
   };
 
   // 初始化

@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import {
   createSeamlessScroll,
   ScrollOptions,
@@ -6,17 +6,9 @@ import {
   ScrollState,
   ScrollMethods,
 } from "@seamless-scroll/core";
-import type { SeamlessScrollProps, SeamlessScrollStyles } from "@seamless-scroll/shared";
+import { HooksProps } from "./types";
 
-// 扩展 SeamlessScrollProps 以支持 React 特定的样式类型
-export type ReactSeamlessScrollProps = SeamlessScrollProps<React.CSSProperties>;
-
-// 扩展 SeamlessScrollStyles 以支持 React 特定的样式类型
-export type ReactSeamlessScrollStyles = SeamlessScrollStyles<React.CSSProperties>;
-
-export function useSeamlessScroll(
-  props: Omit<ReactSeamlessScrollProps, "data" | "children"> & { data: any[] },
-) {
+export function useSeamlessScroll(props: HooksProps) {
   // 引用DOM元素
   const containerRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -25,8 +17,8 @@ export function useSeamlessScroll(
   // 实例引用
   const instanceRef = useRef<SeamlessScrollResult | null>(null);
 
-  // 滚动状态
-  const [scrollState, setScrollState] = useState<ScrollState>({
+  // 使用ref保存完整状态，避免不必要的渲染
+  const stateRef = useRef<ScrollState>({
     isScrolling: false,
     isPaused: false,
     isHovering: false,
@@ -35,6 +27,12 @@ export function useSeamlessScroll(
     minClones: 0,
     contentSize: 0,
     containerSize: 0,
+  });
+
+  // 只保留影响UI渲染的状态用于触发重新渲染
+  const [renderState, setRenderState] = useState({
+    isScrollNeeded: false,
+    minClones: 0,
   });
 
   // 将属性转换为核心库选项
@@ -46,7 +44,6 @@ export function useSeamlessScroll(
       pauseTime: props.pauseTime ?? 2000,
       hoverPause: props.hoverPause ?? true,
       autoScroll: props.autoScroll ?? true,
-      step: props.step ?? 0,
       forceScrolling: props.forceScrolling ?? false,
     };
   }, [
@@ -56,120 +53,59 @@ export function useSeamlessScroll(
     props.pauseTime,
     props.hoverPause,
     props.autoScroll,
-    props.step,
     props.forceScrolling,
   ]);
 
-  // 初始化滚动
-  const initScroll = useCallback(() => {
-    if (!containerRef.current || !contentRef.current || !realListRef.current) {
-      return;
-    }
+  // 初始化滚动 - 只依赖DOM引用，不依赖props
+  const initScroll = useCallback(
+    () => {
+      console.log("initScroll");
 
-    // 销毁可能存在的实例
-    if (instanceRef.current) {
-      instanceRef.current.destroy();
-      instanceRef.current = null;
-    }
-
-    // 创建新实例
-    instanceRef.current = createSeamlessScroll(
-      containerRef.current,
-      contentRef.current,
-      realListRef.current,
-      getScrollOptions(),
-      {
-        onScroll: (distance, direction) => {
-          setScrollState((prev) => ({
-            ...prev,
-            scrollDistance: distance,
-          }));
-          if (props.onScroll) {
-            props.onScroll(distance, direction);
-          }
-        },
-        onItemClick: (item, index) => {
-          if (props.onItemClick) {
-            props.onItemClick(item, index);
-          }
-        },
-      },
-    );
-
-    // 同步状态
-    const updateState = () => {
-      if (instanceRef.current) {
-        const { state } = instanceRef.current;
-        setScrollState({
-          isScrolling: state.isScrolling,
-          isPaused: state.isPaused,
-          isHovering: state.isHovering,
-          scrollDistance: state.scrollDistance,
-          isScrollNeeded: state.isScrollNeeded,
-          minClones: state.minClones,
-          contentSize: state.contentSize,
-          containerSize: state.containerSize,
-        });
+      if (!containerRef.current || !contentRef.current || !realListRef.current) {
+        return;
       }
-    };
+      // 销毁可能存在的实例
+      if (instanceRef.current) {
+        instanceRef.current.destroy();
+        instanceRef.current = null;
+      }
 
-    // 初始状态更新
-    updateState();
+      // 创建新实例 - 使用当前的getScrollOptions()，而不是依赖它
+      instanceRef.current = createSeamlessScroll(
+        () => containerRef.current,
+        () => contentRef.current,
+        () => realListRef.current,
+        getScrollOptions(),
+        (state) => {
+          // 更新内部状态引用，但不直接赋值整个对象
+          const prevState = { ...stateRef.current };
+          Object.assign(stateRef.current, state);
 
-    // 定期更新状态
-    const intervalId = setInterval(updateState, 100);
+          // 仅当真正影响渲染的状态变化时才更新state
+          if (
+            state.isScrollNeeded !== prevState.isScrollNeeded ||
+            state.minClones !== prevState.minClones
+          ) {
+            // 使用函数式更新避免闭包陷阱
+            setRenderState({
+              isScrollNeeded: state.isScrollNeeded,
+              minClones: state.minClones,
+            });
+          }
+        },
+      );
 
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [getScrollOptions, props.onScroll, props.onItemClick]);
-
-  // 内容样式
-  const styles = useCallback((): ReactSeamlessScrollStyles => {
-    const isVertical = props.direction === "vertical";
-
-    return {
-      container: {
-        height:
-          typeof props.containerHeight === "number"
-            ? `${props.containerHeight}px`
-            : props.containerHeight,
-        width:
-          typeof props.containerWidth === "number"
-            ? `${props.containerWidth}px`
-            : props.containerWidth,
-        overflow: "hidden",
-        position: "relative",
-      },
-      content: {
-        display: "flex",
-        flexDirection: isVertical ? "column" : "row",
-        willChange: "transform",
-        position: "relative",
-        // transform由core控制，不在这里设置
-      },
-      list: {
-        display: "flex",
-        flexDirection: "column",
-      },
-      item: {
-        boxSizing: "border-box",
-      },
-      empty: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100%",
-        color: "#999",
-      },
-    };
-  }, [
-    scrollState.isScrolling,
-    scrollState.isScrollNeeded,
-    scrollState.scrollDistance,
-    props.direction,
-    props.duration,
-  ]);
+      // 返回清理函数
+      return () => {
+        if (instanceRef.current) {
+          instanceRef.current.destroy();
+        }
+      };
+    },
+    /* 不依赖getScrollOptions，只在DOM可用时初始化一次 */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   // 在 React 生命周期钩子中初始化和清理
   useEffect(() => {
@@ -184,28 +120,47 @@ export function useSeamlessScroll(
     };
   }, [initScroll]);
 
+  // 监听props变化，更新配置而不是重建实例
+  useEffect(() => {
+    if (instanceRef.current) {
+      instanceRef.current.methods.updateOptions(getScrollOptions());
+    }
+  }, [getScrollOptions]);
+
   // 暴露方法
-  const methods: ScrollMethods = {
-    start: useCallback(() => instanceRef.current!.methods.start(), []),
-    stop: useCallback(() => instanceRef.current!.methods.stop(), []),
-    pause: useCallback(() => instanceRef.current!.methods.pause(), []),
-    resume: useCallback(() => instanceRef.current!.methods.resume(), []),
-    reset: useCallback(() => instanceRef.current!.methods.reset(), []),
-    forceScroll: useCallback(() => instanceRef.current!.methods.forceScroll(), []),
-    updateSize: useCallback(() => instanceRef.current!.methods.updateSize(), []),
-    updateOptions: useCallback(
-      (newOptions: Partial<ScrollOptions>) =>
-        instanceRef.current!.methods.updateOptions(newOptions),
-      [],
-    ),
-  };
+  const methods = useMemo<ScrollMethods>(
+    () => ({
+      start: () => instanceRef.current?.methods.start(),
+      stop: () => instanceRef.current?.methods.stop(),
+      pause: () => instanceRef.current?.methods.pause(),
+      resume: () => instanceRef.current?.methods.resume(),
+      reset: () => instanceRef.current?.methods.reset(),
+      forceScroll: () => instanceRef.current?.methods.forceScroll(),
+      updateSize: () => instanceRef.current?.methods.updateSize(),
+      updateOptions: (newOptions: Partial<ScrollOptions>) =>
+        instanceRef.current?.methods.updateOptions(newOptions),
+      setObserver: (container, content) =>
+        instanceRef.current?.methods.setObserver(container, content),
+      clearObeserver: () => instanceRef.current?.methods.clearObeserver(),
+    }),
+    [],
+  );
+
+  // 合并渲染状态和内部状态提供完整状态接口
+  const scrollState = useMemo<ScrollState>(
+    () => ({
+      ...stateRef.current,
+      isScrollNeeded: renderState.isScrollNeeded,
+      minClones: renderState.minClones,
+    }),
+    [renderState.isScrollNeeded, renderState.minClones],
+  );
 
   return {
     containerRef,
     contentRef,
     realListRef,
     state: scrollState,
-    styles,
     methods,
   };
 }

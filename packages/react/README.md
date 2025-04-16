@@ -59,24 +59,81 @@ export default App;
 
 ### 组件 Props
 
-| 属性              | 类型                                            | 默认值       | 描述                               |
-| ----------------- | ----------------------------------------------- | ------------ | ---------------------------------- |
-| `data`            | `Array<T>`                                      | `[]`         | 要展示的数据列表                   |
-| `direction`       | `'vertical'` \| `'horizontal'`                  | `'vertical'` | 滚动方向                           |
-| `speed`           | `number`                                        | `60`         | 滚动速度（像素/秒）                |
-| `duration`        | `number`                                        | `1000`       | 每次滚动动画的持续时间（毫秒）     |
-| `pauseTime`       | `number`                                        | `0`          | 每次滚动后的暂停时间（毫秒）       |
-| `hoverPause`      | `boolean`                                       | `true`       | 是否在鼠标悬停时暂停               |
-| `autoScroll`      | `boolean`                                       | `true`       | 是否自动开始滚动                   |
-| `step`            | `number`                                        | `0`          | 滚动步长，0表示自动计算            |
-| `forceScrolling`  | `boolean`                                       | `false`      | 是否强制滚动（即使内容未超出容器） |
-| `containerHeight` | `string \| number`                              | `'100%'`     | 容器高度                           |
-| `containerWidth`  | `string \| number`                              | `'100%'`     | 容器宽度                           |
-| `className`       | `string`                                        |              | 容器元素的自定义类名               |
-| `style`           | `CSSProperties`                                 | -            | 容器元素的自定义样式               |
-| `customClass`     | `string`                                        | -            | 自定义CSS类名                      |
-| `onScroll`        | `(distance: number, direction: string) => void` | -            | 滚动事件回调                       |
-| `onItemClick`     | `(item: T, index: number) => void`              | -            | 点击项目时的回调函数               |
+| 属性              | 类型                           | 默认值       | 描述                               |
+| ----------------- | ------------------------------ | ------------ | ---------------------------------- |
+| `data`            | `Array<any>`                   | `[]`         | 要展示的数据列表                   |
+| `direction`       | `'vertical'` \| `'horizontal'` | `'vertical'` | 滚动方向                           |
+| `speed`           | `number`                       | `50`         | 滚动速度（像素/秒）                |
+| `duration`        | `number`                       | `500`        | 每次滚动动画的持续时间（毫秒）     |
+| `pauseTime`       | `number`                       | `2000`       | 每次滚动后的暂停时间（毫秒）       |
+| `hoverPause`      | `boolean`                      | `true`       | 是否在鼠标悬停时暂停               |
+| `autoScroll`      | `boolean`                      | `true`       | 是否自动开始滚动                   |
+| `forceScrolling`  | `boolean`                      | `false`      | 是否强制滚动（即使内容未超出容器） |
+| `containerHeight` | `string \| number`             | `'100%'`     | 容器高度                           |
+| `containerWidth`  | `string \| number`             | `'100%'`     | 容器宽度                           |
+| `customClass`     | `string`                       | -            | 自定义CSS类名                      |
+| `style`           | `CSSProperties`                | -            | 自定义样式                         |
+| `emptyRender`     | `ReactNode`                    | `"无数据"`   | 无数据时显示的内容                 |
+
+| 事件名        | 参数                         | 描述             |
+| ------------- | ---------------------------- | ---------------- |
+| `onItemClick` | `(item: any, index: number)` | 点击列表项时触发 |
+
+### 自定义渲染
+
+React组件支持以下方式自定义内容渲染：
+
+| 渲染方式   | 描述                                    |
+| ---------- | --------------------------------------- |
+| 函数子组件 | 通过函数定制每项的渲染                  |
+| 克隆组件   | 将props注入到子组件                     |
+| 默认渲染   | 使用JSON.stringify渲染                  |
+| 无数据渲染 | 通过emptyRender属性自定义无数据时的内容 |
+
+#### 函数子组件示例
+
+```jsx
+<SeamlessScroll data={items}>
+  {(item, index) => (
+    <div className="custom-item" key={index}>
+      <span className="title">{item.title}</span>
+      <span className="desc">{item.desc}</span>
+    </div>
+  )}
+</SeamlessScroll>
+```
+
+#### 克隆组件示例
+
+```jsx
+// 创建一个自定义项组件
+const ListItem = ({ item, index }) => (
+  <div className="list-item">
+    <span className="index">{index + 1}.</span>
+    <span className="content">{item.text}</span>
+  </div>
+);
+
+// 在SeamlessScroll中使用
+<SeamlessScroll data={items}>
+  <ListItem />
+</SeamlessScroll>;
+```
+
+#### 无数据渲染示例
+
+```jsx
+// 自定义空状态显示
+<SeamlessScroll
+  data={[]}
+  emptyRender={
+    <div className="empty-state">
+      <img src="/empty.svg" alt="暂无数据" />
+      <p>暂无公告，请稍后查看</p>
+    </div>
+  }
+/>
+```
 
 ### useSeamlessScroll Hook
 
