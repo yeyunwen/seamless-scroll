@@ -1,31 +1,6 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: Arial, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  background: #f8f8f8;
-  padding: 20px;
-}
-
-.app {
+.examples-app {
   max-width: 900px;
   margin: 0 auto;
-}
-
-h1 {
-  margin-bottom: 20px;
-  color: #2c3e50;
-  text-align: center;
-}
-
-h2 {
-  margin-bottom: 15px;
-  color: #42b883;
 }
 
 .config-panel {

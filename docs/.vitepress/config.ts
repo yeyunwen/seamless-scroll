@@ -1,4 +1,6 @@
 import { defineConfig } from "vitepress";
+import { vitepressDemoPlugin } from "vitepress-demo-plugin";
+import sidebar from "./sidebar";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -16,31 +18,12 @@ export default defineConfig({
     logo: "/logo.svg",
 
     nav: [
-      { text: "指南", link: "/guide/index" },
-      { text: "示例", link: "/examples/vue" },
-      { text: "API", link: "/api/vue" },
+      { text: "指南", link: "/guide/", activeMatch: "^/guide/" },
+      { text: "示例", link: "/examples/basics", activeMatch: "^/examples/" },
+      { text: "API", link: "/api/vue", activeMatch: "^/api/" },
     ],
 
-    sidebar: {
-      "/guide/": [
-        {
-          text: "指南",
-          items: [{ text: "快速开始", link: "/guide/getting-started" }],
-        },
-      ],
-      "/examples/": [
-        {
-          text: "示例",
-          items: [{ text: "Vue示例", link: "/examples/vue" }],
-        },
-      ],
-      "/api/": [
-        {
-          text: "API参考",
-          items: [{ text: "Vue API", link: "/api/vue" }],
-        },
-      ],
-    },
+    sidebar,
 
     socialLinks: [{ icon: "github", link: "https://github.com/yeyunwen/seamless-scroll" }],
 
@@ -61,6 +44,18 @@ export default defineConfig({
     docFooter: {
       prev: "上一页",
       next: "下一页",
+    },
+  },
+
+  markdown: {
+    config(md) {
+      md.use(vitepressDemoPlugin);
+    },
+  },
+
+  vite: {
+    server: {
+      host: true,
     },
   },
 });

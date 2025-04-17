@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { SeamlessScroll } from "@seamless-scroll/vue";
-import "../../shared/style.css";
 import { type ListItem, listData as initListData, getItemStyle } from "../../shared/index";
 
 // 配置选项
@@ -64,7 +63,7 @@ const handleReset = () => {
 </script>
 
 <template>
-  <div class="app">
+  <div class="examples-app">
     <h1>无缝滚动组件 - Vue 示例</h1>
 
     <div class="config-panel">
@@ -144,3 +143,116 @@ const handleReset = () => {
     </div>
   </div>
 </template>
+
+<style lang="css" scoped>
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 15px;
+  color: #42b883;
+}
+
+.config-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.config-group {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.config-group label {
+  display: inline-block;
+  width: 150px;
+  margin-right: 10px;
+}
+
+.config-group input[type="range"] {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.actions button {
+  padding: 8px 15px;
+  background: #42b883;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.actions button:hover {
+  background: #369a6e;
+}
+
+.demo-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.scroll-container {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  height: 200px;
+}
+
+.list-item {
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  border-left: 4px solid #42b883;
+  background: white;
+  transition: background 0.2s;
+}
+
+.list-item:hover {
+  background: #f5f5f5;
+}
+
+.clicked-info {
+  margin-top: 10px;
+  padding: 10px;
+  background: #e0f7fa;
+  border-radius: 4px;
+  animation: highlight 3s;
+}
+
+@keyframes highlight {
+  0% {
+    background: #b3e5fc;
+  }
+  100% {
+    background: #e0f7fa;
+  }
+}
+
+.test-btn {
+  background-color: #ff5722 !important;
+}
+.test-btn:hover {
+  background-color: #e64a19 !important;
+}
+</style>

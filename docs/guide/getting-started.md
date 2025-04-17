@@ -28,37 +28,11 @@ yarn add @seamless-scroll/vue # Vue版本
 
 ## 基本使用
 
-### React
+### Vue/React
 
-```jsx
-import { useState } from "react";
-import { SeamlessScroll } from "@seamless-scroll/react";
+::: code-group
 
-function App() {
-  const [items, setItems] = useState([
-    { id: 1, text: "公告1" },
-    { id: 2, text: "公告2" },
-    { id: 3, text: "公告3" },
-  ]);
-
-  const handleItemClick = (item) => {
-    console.log("点击了项目:", item);
-  };
-
-  return (
-    <div className="app">
-      <h1>无缝滚动示例</h1>
-      <SeamlessScroll data={items} onItemClick={handleItemClick} />
-    </div>
-  );
-}
-
-export default App;
-```
-
-### Vue
-
-```vue
+```vue [Vue]
 <script setup>
 import { ref } from "vue";
 import { SeamlessScroll } from "@seamless-scroll/vue";
@@ -76,12 +50,55 @@ const handleItemClick = (item) => {
 
 <template>
   <div class="app">
-    <h1>无缝滚动示例</h1>
-    <SeamlessScroll :data="items" @item-click="handleItemClick">
-      <template #item="{ item }">
-        <div class="scroll-item">{{ item.text }}</div>
-      </template>
+    <SeamlessScroll
+      :data="items"
+      :container-height="200"
+      :duration="1000"
+      @item-click="handleItemClick"
+      forceScrolling
+    >
+      <div>{{ item.text }}</div>
     </SeamlessScroll>
   </div>
 </template>
 ```
+
+```tsx [React]
+import { useState } from "react";
+import { SeamlessScroll } from "@seamless-scroll/react";
+
+function App() {
+  const [items, setItems] = useState([
+    { id: 1, text: "公告1" },
+    { id: 2, text: "公告2" },
+    { id: 3, text: "公告3" },
+  ]);
+
+  const handleItemClick = (item) => {
+    console.log("点击了项目:", item);
+  };
+
+  return (
+    <div className="app">
+      <SeamlessScroll
+        data={items}
+        containerHeight={200}
+        duration={1000}
+        onItemClick={handleItemClick}
+        forceScrolling
+      >
+        {({ item, index }) => <div>{item.text}</div>}
+      </SeamlessScroll>
+    </div>
+  );
+}
+
+export default App;
+```
+
+:::
+
+::: info
+当内容大小没有超过容器时，默认不会滚动，可以通设置 `forceScrolling` 来启用强制滚动。
+`SeamlessScroll`的宽高默认为 `100%`。
+:::

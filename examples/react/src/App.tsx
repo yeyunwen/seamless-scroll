@@ -37,7 +37,7 @@ const App = () => {
   };
 
   return (
-    <div className="app">
+    <div className="examples-app">
       <h1>无缝滚动组件 - React 示例</h1>
 
       <div className="config-panel">

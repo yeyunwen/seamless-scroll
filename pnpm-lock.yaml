@@ -58,16 +58,44 @@ importers:
         version: 4.5.3(@types/node@22.14.0)(rollup@4.38.0)(typescript@5.8.2)(vite@6.2.4(@types/node@22.14.0)(sass-embedded@1.86.3)(terser@5.39.0)(yaml@2.7.1))
       vitepress:
         specifier: ^1.0.0-rc.45
-        version: 1.6.3(@algolia/client-search@5.23.3)(@types/node@22.14.0)(postcss@8.5.3)(sass-embedded@1.86.3)(search-insights@2.17.3)(terser@5.39.0)(typescript@5.8.2)
+        version: 1.6.3(@algolia/client-search@5.23.3)(@types/node@22.14.0)(@types/react@19.1.0)(postcss@8.5.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass-embedded@1.86.3)(search-insights@2.17.3)(terser@5.39.0)(typescript@5.8.2)
       vitest:
         specifier: ^3.1.1
         version: 3.1.1(@types/debug@4.1.12)(@types/node@22.14.0)(happy-dom@17.4.4)(sass-embedded@1.86.3)(terser@5.39.0)(yaml@2.7.1)
 
   docs:
+    dependencies:
+      '@seamless-scroll/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      '@seamless-scroll/react':
+        specifier: workspace:*
+        version: link:../packages/react
+      '@seamless-scroll/vue':
+        specifier: workspace:*
+        version: link:../packages/vue
+      react:
+        specifier: ^19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.1.0(react@19.1.0)
+      vue:
+        specifier: ^3.5.13
+        version: 3.5.13(typescript@5.8.2)
     devDependencies:
+      '@types/react':
+        specifier: ^19.0.12
+        version: 19.1.0
+      '@types/react-dom':
+        specifier: ^19.0.4
+        version: 19.1.1(@types/react@19.1.0)
       vitepress:
         specifier: ^1.6.3
-        version: 1.6.3(@algolia/client-search@5.23.3)(@types/node@22.14.0)(postcss@8.5.3)(sass-embedded@1.86.3)(search-insights@2.17.3)(terser@5.39.0)(typescript@5.8.2)
+        version: 1.6.3(@algolia/client-search@5.23.3)(@types/node@22.14.0)(@types/react@19.1.0)(postcss@8.5.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass-embedded@1.86.3)(search-insights@2.17.3)(terser@5.39.0)(typescript@5.8.2)
+      vitepress-demo-plugin:
+        specifier: ^1.4.0
+        version: 1.4.0(shiki@2.5.0)(vitepress@1.6.3(@algolia/client-search@5.23.3)(@types/node@22.14.0)(@types/react@19.1.0)(postcss@8.5.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass-embedded@1.86.3)(search-insights@2.17.3)(terser@5.39.0)(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
 
   examples/core:
     dependencies:
@@ -2882,6 +2910,13 @@ packages:
       yaml:
         optional: true
 
+  vitepress-demo-plugin@1.4.0:
+    resolution: {integrity: sha512-BOvXAiiC7acq7PMSSKWmmJAAyxaetHndKt4whVwH3NKG/f+P5kZJVlGDUWtwSVZLW0l++AxHzJC5nDYGkg5zKA==}
+    peerDependencies:
+      shiki: '*'
+      vitepress: '*'
+      vue: ^3.2.0
+
   vitepress@1.6.3:
     resolution: {integrity: sha512-fCkfdOk8yRZT8GD9BFqusW3+GggWYZ/rYncOfmgcDtP3ualNHCAg+Robxp2/6xfH1WwPHtGpPwv7mbA3qomtBw==}
     hasBin: true
@@ -3364,9 +3399,9 @@ snapshots:
 
   '@docsearch/css@3.8.2': {}
 
-  '@docsearch/js@3.8.2(@algolia/client-search@5.23.3)(search-insights@2.17.3)':
+  '@docsearch/js@3.8.2(@algolia/client-search@5.23.3)(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(search-insights@2.17.3)':
     dependencies:
-      '@docsearch/react': 3.8.2(@algolia/client-search@5.23.3)(search-insights@2.17.3)
+      '@docsearch/react': 3.8.2(@algolia/client-search@5.23.3)(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(search-insights@2.17.3)
       preact: 10.26.5
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -3375,13 +3410,16 @@ snapshots:
       - react-dom
       - search-insights
 
-  '@docsearch/react@3.8.2(@algolia/client-search@5.23.3)(search-insights@2.17.3)':
+  '@docsearch/react@3.8.2(@algolia/client-search@5.23.3)(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(search-insights@2.17.3)':
     dependencies:
       '@algolia/autocomplete-core': 1.17.7(@algolia/client-search@5.23.3)(algoliasearch@5.23.3)(search-insights@2.17.3)
       '@algolia/autocomplete-preset-algolia': 1.17.7(@algolia/client-search@5.23.3)(algoliasearch@5.23.3)
       '@docsearch/css': 3.8.2
       algoliasearch: 5.23.3
     optionalDependencies:
+      '@types/react': 19.1.0
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
       search-insights: 2.17.3
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -5719,10 +5757,16 @@ snapshots:
       terser: 5.39.0
       yaml: 2.7.1
 
-  vitepress@1.6.3(@algolia/client-search@5.23.3)(@types/node@22.14.0)(postcss@8.5.3)(sass-embedded@1.86.3)(search-insights@2.17.3)(terser@5.39.0)(typescript@5.8.2):
+  vitepress-demo-plugin@1.4.0(shiki@2.5.0)(vitepress@1.6.3(@algolia/client-search@5.23.3)(@types/node@22.14.0)(@types/react@19.1.0)(postcss@8.5.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass-embedded@1.86.3)(search-insights@2.17.3)(terser@5.39.0)(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2)):
+    dependencies:
+      shiki: 2.5.0
+      vitepress: 1.6.3(@algolia/client-search@5.23.3)(@types/node@22.14.0)(@types/react@19.1.0)(postcss@8.5.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass-embedded@1.86.3)(search-insights@2.17.3)(terser@5.39.0)(typescript@5.8.2)
+      vue: 3.5.13(typescript@5.8.2)
+
+  vitepress@1.6.3(@algolia/client-search@5.23.3)(@types/node@22.14.0)(@types/react@19.1.0)(postcss@8.5.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass-embedded@1.86.3)(search-insights@2.17.3)(terser@5.39.0)(typescript@5.8.2):
     dependencies:
       '@docsearch/css': 3.8.2
-      '@docsearch/js': 3.8.2(@algolia/client-search@5.23.3)(search-insights@2.17.3)
+      '@docsearch/js': 3.8.2(@algolia/client-search@5.23.3)(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(search-insights@2.17.3)
       '@iconify-json/simple-icons': 1.2.31
       '@shikijs/core': 2.5.0
       '@shikijs/transformers': 2.5.0
