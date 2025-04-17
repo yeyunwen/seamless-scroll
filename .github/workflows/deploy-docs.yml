@@ -35,17 +35,19 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2 # 安装pnpm并添加到环境变量
         with:
-          version: 8.15.1 # 指定需要的 pnpm 版本
+          version: 10.6.5 # 指定需要的 pnpm 版本
       # - uses: oven-sh/setup-bun@v1 # 如果使用 Bun，请取消注释
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: pnpm # 或 pnpm / yarn
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Install dependencies
         run: pnpm install # 或 pnpm install / yarn install / bun install
+      - name: Build packages
+        run: pnpm build
       - name: Build with VitePress
         run: |
           pnpm docs:build
