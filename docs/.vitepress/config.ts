@@ -11,7 +11,16 @@ export default defineConfig({
   cleanUrls: true,
   base: "/seamless-scroll/",
 
-  head: [["link", { rel: "icon", type: "image/svg+xml", href: "/logo.svg" }]],
+  head: [
+    [
+      "link",
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href: "/seamless-scroll/favicon.svg",
+      },
+    ],
+  ],
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
