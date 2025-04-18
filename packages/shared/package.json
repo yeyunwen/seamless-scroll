@@ -2,13 +2,13 @@
   "name": "@seamless-scroll/shared",
   "version": "0.1.2",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "import": "./dist/index.mjs"
     },
     "./*": "./*"
@@ -21,15 +21,13 @@
     "access": "public"
   },
   "scripts": {
-    "dev": "tsup src/index.ts --watch",
-    "clean": "rimraf dist",
-    "build": "pnpm clean && tsup src/index.ts --format cjs,esm --dts"
+    "dev": "tsup --watch",
+    "build": "tsup"
   },
   "dependencies": {
     "@seamless-scroll/core": "workspace:*"
   },
   "devDependencies": {
-    "rimraf": "^5.0.10",
     "tsup": "^8.4.0"
   }
 }

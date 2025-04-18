@@ -155,9 +155,6 @@ importers:
       happy-dom:
         specifier: ^17.4.4
         version: 17.4.4
-      rimraf:
-        specifier: ^5.0.10
-        version: 5.0.10
       tsup:
         specifier: ^8.4.0
         version: 8.4.0(@microsoft/api-extractor@7.52.3(@types/node@22.14.0))(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.1)
@@ -196,9 +193,6 @@ importers:
         specifier: workspace:*
         version: link:../core
     devDependencies:
-      rimraf:
-        specifier: ^5.0.10
-        version: 5.0.10
       tsup:
         specifier: ^8.4.0
         version: 8.4.0(@microsoft/api-extractor@7.52.3(@types/node@22.14.0))(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.1)
