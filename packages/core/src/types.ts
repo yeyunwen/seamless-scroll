@@ -59,7 +59,7 @@ export interface ScrollMethods {
   /* 设置观察者 */
   setObserver: (container: HTMLElement, content: HTMLElement) => void;
   /* 清除观察者 */
-  clearObeserver: () => void;
+  clearObserver: () => void;
   /* 重置观察者，以观察最新的dom */
   resetObserver: () => void;
 }

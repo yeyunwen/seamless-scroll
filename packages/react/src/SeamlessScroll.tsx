@@ -116,7 +116,7 @@ const SeamlessScroll = forwardRef<SeamlessScrollRef, ReactSeamlessScrollProps>((
     }
 
     if (!data.length) {
-      methods.clearObeserver();
+      methods.clearObserver();
     } else {
       setTimeout(() => {
         // 数据变化时，重置滚动状态并更新尺寸
@@ -141,7 +141,7 @@ const SeamlessScroll = forwardRef<SeamlessScrollRef, ReactSeamlessScrollProps>((
       forceScroll: methods.forceScroll,
       updateSize: methods.updateSize,
       setObserver: methods.setObserver,
-      clearObserver: methods.clearObeserver,
+      clearObserver: methods.clearObserver,
       resetObserver: methods.resetObserver,
     }),
     [methods],

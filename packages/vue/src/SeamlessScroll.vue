@@ -83,7 +83,7 @@ watch(
   () => props.data,
   (newVal) => {
     if (!newVal.length) {
-      methods.clearObeserver();
+      methods.clearObserver();
     } else {
       nextTick(() => {
         methods.reset();
@@ -105,7 +105,7 @@ defineExpose<SeamlessScrollRef>({
   forceScroll: methods.forceScroll,
   updateSize: methods.updateSize,
   setObserver: methods.setObserver,
-  clearObserver: methods.clearObeserver,
+  clearObserver: methods.clearObserver,
   resetObserver: methods.resetObserver,
 });
 </script>

@@ -363,7 +363,7 @@ export const createSeamlessScroll = (
     }
   };
 
-  const clearObeserver = () => {
+  const clearObserver = () => {
     if (observer) {
       observer.disconnect();
     }
@@ -372,7 +372,7 @@ export const createSeamlessScroll = (
   // 设置观察者
   const setObserver = (container: HTMLElement, realList: HTMLElement) => {
     // 如果已有观察者，先断开连接
-    clearObeserver();
+    clearObserver();
 
     // 创建新的观察者
     observer = new ResizeObserver(() => {
@@ -461,7 +461,7 @@ export const createSeamlessScroll = (
     updateSize,
     updateOptions,
     setObserver,
-    clearObeserver,
+    clearObserver,
     resetObserver,
   };
 
