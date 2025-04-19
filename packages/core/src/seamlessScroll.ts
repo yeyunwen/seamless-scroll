@@ -370,11 +370,9 @@ export const createSeamlessScroll = (
   };
 
   // 设置观察者
-  const setObserver = (container: HTMLElement, content: HTMLElement) => {
+  const setObserver = (container: HTMLElement, realList: HTMLElement) => {
     // 如果已有观察者，先断开连接
-    if (observer) {
-      observer.disconnect();
-    }
+    clearObeserver();
 
     // 创建新的观察者
     observer = new ResizeObserver(() => {
@@ -383,7 +381,15 @@ export const createSeamlessScroll = (
 
     // 观察容器和内容区
     observer.observe(container);
-    observer.observe(content);
+    observer.observe(realList);
+  };
+
+  const resetObserver = () => {
+    const container = domRefs.getContainer();
+    const realList = domRefs.getRealList();
+    if (container && realList) {
+      setObserver(container, realList);
+    }
   };
 
   // 初始化
@@ -456,6 +462,7 @@ export const createSeamlessScroll = (
     updateOptions,
     setObserver,
     clearObeserver,
+    resetObserver,
   };
 
   // 初始化

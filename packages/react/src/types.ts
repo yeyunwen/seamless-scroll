@@ -12,6 +12,7 @@ export type ChildrenRenderFunction = (props: RenderProps) => ReactNode;
 export type ReactSeamlessScrollProps = SeamlessScrollProps<CSSProperties> & {
   children?: ChildrenRenderFunction | ReactElement;
   emptyRender?: ReactNode;
+  onItemClick?: (item: any, index: number) => void;
 };
 
 // 扩展 SeamlessScrollStyles 以支持 React 特定的样式类型

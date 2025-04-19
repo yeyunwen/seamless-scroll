@@ -139,9 +139,10 @@ export function useSeamlessScroll(props: HooksProps) {
       updateSize: () => instanceRef.current?.methods.updateSize(),
       updateOptions: (newOptions: Partial<ScrollOptions>) =>
         instanceRef.current?.methods.updateOptions(newOptions),
-      setObserver: (container, content) =>
-        instanceRef.current?.methods.setObserver(container, content),
+      setObserver: (container, realList) =>
+        instanceRef.current?.methods.setObserver(container, realList),
       clearObeserver: () => instanceRef.current?.methods.clearObeserver(),
+      resetObserver: () => instanceRef.current?.methods.resetObserver(),
     }),
     [],
   );

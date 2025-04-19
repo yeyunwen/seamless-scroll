@@ -112,9 +112,10 @@ export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
     updateSize: () => scrollInstance?.methods.updateSize(),
     updateOptions: (newOptions: Partial<ScrollOptions>) =>
       scrollInstance?.methods.updateOptions(newOptions),
-    setObserver: (container: HTMLElement, content: HTMLElement) =>
-      scrollInstance.methods.setObserver(container, content),
+    setObserver: (container: HTMLElement, realList: HTMLElement) =>
+      scrollInstance.methods.setObserver(container, realList),
     clearObeserver: () => scrollInstance?.methods.clearObeserver(),
+    resetObserver: () => scrollInstance?.methods.resetObserver(),
   };
 
   return {

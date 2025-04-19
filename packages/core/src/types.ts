@@ -60,6 +60,8 @@ export interface ScrollMethods {
   setObserver: (container: HTMLElement, content: HTMLElement) => void;
   /* 清除观察者 */
   clearObeserver: () => void;
+  /* 重置观察者，以观察最新的dom */
+  resetObserver: () => void;
 }
 
 export interface SeamlessScrollResult {

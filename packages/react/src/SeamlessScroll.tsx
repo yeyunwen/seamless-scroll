@@ -123,11 +123,8 @@ const SeamlessScroll = forwardRef<SeamlessScrollRef, ReactSeamlessScrollProps>((
         methods.reset();
         // 等待 DOM 更新后重新计算尺寸
         methods.updateSize();
-        // 重要：应该观察 realListRef 而不是 contentRef
-        if (containerRef.current && realListRef.current) {
-          console.log("重新设置观察者，观察容器和真实列表");
-          methods.setObserver(containerRef.current, realListRef.current);
-        }
+        // 观察最新的 DOM
+        methods.resetObserver();
       }, 0);
     }
   }, [data, methods, containerRef, realListRef]);
@@ -144,6 +141,8 @@ const SeamlessScroll = forwardRef<SeamlessScrollRef, ReactSeamlessScrollProps>((
       forceScroll: methods.forceScroll,
       updateSize: methods.updateSize,
       setObserver: methods.setObserver,
+      clearObserver: methods.clearObeserver,
+      resetObserver: methods.resetObserver,
     }),
     [methods],
   );

@@ -89,12 +89,7 @@ watch(
         methods.reset();
         methods.updateSize();
         // 重新设置 observer
-        const currentContainer = containerRef.value;
-        const currentRealList = realListRef.value;
-
-        if (currentContainer && currentRealList) {
-          methods.setObserver(currentContainer, currentRealList);
-        }
+        methods.resetObserver();
       });
     }
   },
@@ -110,6 +105,8 @@ defineExpose<SeamlessScrollRef>({
   forceScroll: methods.forceScroll,
   updateSize: methods.updateSize,
   setObserver: methods.setObserver,
+  clearObserver: methods.clearObeserver,
+  resetObserver: methods.resetObserver,
 });
 </script>
 

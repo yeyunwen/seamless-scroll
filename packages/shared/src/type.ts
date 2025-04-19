@@ -12,11 +12,6 @@ export interface SeamlessScrollProps<S = Record<string, any>> extends ScrollOpti
   customClass?: string;
   /* 自定义样式 */
   style?: S;
-  /**
-   * 项目点击事件处理
-   * 注意：此事件由框架层处理，不依赖于核心包
-   */
-  onItemClick?: (item: any, index: number) => void;
 }
 
 export interface SeamlessScrollStyles<T = Record<string, any>> {
@@ -35,5 +30,7 @@ export interface SeamlessScrollRef {
   reset: () => void;
   forceScroll: () => void;
   updateSize: () => void;
-  setObserver: (container: HTMLElement, content: HTMLElement) => void;
+  setObserver: (container: HTMLElement, realList: HTMLElement) => void;
+  resetObserver: () => void;
+  clearObserver: () => void;
 }
