@@ -16,6 +16,9 @@ export default [
   },
   {
     text: "API参考",
-    items: [{ text: "Vue API", link: "/api/vue" }],
+    items: [
+      { text: "Vue", link: "/api/vue" },
+      { text: "React", link: "/api/react" },
+    ],
   },
 ] as DefaultTheme.Sidebar;
