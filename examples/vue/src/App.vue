@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
 import { SeamlessScroll } from "@seamless-scroll/vue";
 import { type ListItem, listData as initListData, getItemStyle } from "../../shared/index";
 
@@ -14,6 +14,112 @@ const scrollRef = ref();
 
 // 数据
 const listData = ref<ListItem[]>(initListData);
+
+// 虚拟滚动配置
+const enableVirtualScroll = ref(false);
+const dataSize = ref(100);
+const largeDataItems = ref<ListItem[]>([]);
+
+// 性能监控
+const fpsValues = ref<number[]>([]);
+const fpsMonitorActive = ref(false);
+const lastFrameTime = ref(performance.now());
+const frameCount = ref(0);
+const currentFps = ref(0);
+const fpsUpdateInterval = 500; // 每500ms更新一次FPS
+let fpsIntervalId: number | null = null;
+
+// 生成大量数据
+const generateLargeData = () => {
+  const count = dataSize.value;
+  const newData: ListItem[] = [];
+
+  for (let i = 0; i < count; i++) {
+    newData.push({
+      id: i,
+      title: `大数据项 ${i}`,
+      color: getRandomColor(),
+    });
+  }
+
+  largeDataItems.value = newData;
+};
+
+// 生成随机颜色
+const getRandomColor = () => {
+  const colors = [
+    "#f44336",
+    "#e91e63",
+    "#9c27b0",
+    "#673ab7",
+    "#3f51b5",
+    "#2196f3",
+    "#03a9f4",
+    "#00bcd4",
+    "#009688",
+    "#4caf50",
+    "#8bc34a",
+    "#cddc39",
+    "#ffeb3b",
+    "#ffc107",
+    "#ff9800",
+    "#ff5722",
+    "#795548",
+    "#9e9e9e",
+    "#607d8b",
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
+// 当前显示的数据
+const displayData = computed(() => {
+  return enableVirtualScroll.value ? largeDataItems.value : listData.value;
+});
+
+// 启动FPS监控
+const startFpsMonitoring = () => {
+  if (fpsIntervalId) return;
+
+  fpsMonitorActive.value = true;
+  fpsValues.value = [];
+  frameCount.value = 0;
+  lastFrameTime.value = performance.now();
+
+  // 记录帧率
+  const recordFrame = () => {
+    frameCount.value++;
+    requestAnimationFrame(recordFrame);
+  };
+  requestAnimationFrame(recordFrame);
+
+  // 定期计算FPS
+  fpsIntervalId = window.setInterval(() => {
+    const now = performance.now();
+    const elapsed = now - lastFrameTime.value;
+
+    if (elapsed > 0) {
+      currentFps.value = Math.round((frameCount.value * 1000) / elapsed);
+      fpsValues.value.push(currentFps.value);
+
+      // 只保留最近30个值
+      if (fpsValues.value.length > 30) {
+        fpsValues.value.shift();
+      }
+
+      frameCount.value = 0;
+      lastFrameTime.value = now;
+    }
+  }, fpsUpdateInterval);
+};
+
+// 停止FPS监控
+const stopFpsMonitoring = () => {
+  if (fpsIntervalId) {
+    clearInterval(fpsIntervalId);
+    fpsIntervalId = null;
+    fpsMonitorActive.value = false;
+  }
+};
 
 // 点击项目
 const clickedItem = ref<any>(null);
@@ -60,6 +166,39 @@ const handleModifyData = () => {
 const handleReset = () => {
   listData.value = initListData;
 };
+
+// 切换虚拟滚动
+const toggleVirtualScroll = (enabled: boolean) => {
+  if (enabled && largeDataItems.value.length === 0) {
+    generateLargeData();
+  }
+  // 如果开启了虚拟滚动，自动启动FPS监控
+  if (enabled) {
+    startFpsMonitoring();
+  } else {
+    stopFpsMonitoring();
+  }
+};
+
+// 监听enableVirtualScroll变化
+watch(enableVirtualScroll, (newValue) => {
+  toggleVirtualScroll(newValue);
+});
+
+// 重新生成数据
+const regenerateData = () => {
+  generateLargeData();
+  resetScroll();
+};
+
+onMounted(() => {
+  // 初始预生成一些数据以备用
+  generateLargeData();
+});
+
+onBeforeUnmount(() => {
+  stopFpsMonitoring();
+});
 </script>
 
 <template>
@@ -102,6 +241,28 @@ const handleReset = () => {
         <input type="range" v-model.number="columnWidth" min="120" max="400" step="5" />
       </div>
 
+      <div class="virtual-scroll-panel">
+        <h3>虚拟滚动测试</h3>
+        <div class="config-group">
+          <label>
+            <input type="checkbox" v-model="enableVirtualScroll" />
+            启用虚拟滚动
+          </label>
+        </div>
+        <div class="config-group" v-if="enableVirtualScroll">
+          <label>数据量: {{ dataSize }}</label>
+          <input
+            type="range"
+            v-model.number="dataSize"
+            min="100"
+            max="10000"
+            step="100"
+            @change="regenerateData"
+          />
+          <span class="data-count">{{ dataSize }} 项</span>
+        </div>
+      </div>
+
       <div class="actions">
         <button @click="startScroll">开始</button>
         <button @click="stopScroll">停止</button>
@@ -111,23 +272,71 @@ const handleReset = () => {
         <button @click="activateTestMode" class="test-btn">快速滚动测试</button>
       </div>
 
-      <div class="actions">
+      <div class="actions" v-if="!enableVirtualScroll">
         <button @click="handleClearData">清空数据</button>
         <button @click="handleModifyData">修改数据</button>
         <button @click="handleReset">重置数据</button>
       </div>
     </div>
 
+    <!-- 性能监控面板 -->
+    <div class="performance-panel" v-if="enableVirtualScroll">
+      <h3>性能监控</h3>
+      <div class="fps-display">
+        <div
+          class="fps-value"
+          :class="{
+            'fps-high': currentFps > 50,
+            'fps-medium': currentFps <= 50 && currentFps >= 30,
+            'fps-low': currentFps < 30,
+          }"
+        >
+          {{ currentFps }} FPS
+        </div>
+        <div class="fps-graph">
+          <div
+            v-for="(fps, index) in fpsValues"
+            :key="index"
+            class="fps-bar"
+            :style="{
+              height: `${Math.min(100, fps * 1.5)}%`,
+              backgroundColor: fps > 50 ? '#4caf50' : fps >= 30 ? '#ff9800' : '#f44336',
+            }"
+            :title="`${fps} FPS`"
+          ></div>
+        </div>
+      </div>
+      <div class="performance-message">
+        <template v-if="currentFps > 50">
+          <span class="status-icon good">✓</span> 流畅（{{ currentFps }} FPS）
+        </template>
+        <template v-else-if="currentFps >= 30">
+          <span class="status-icon warning">⚠</span> 尚可（{{ currentFps }} FPS）
+        </template>
+        <template v-else>
+          <span class="status-icon bad">✗</span> 卡顿（{{ currentFps }} FPS）
+        </template>
+      </div>
+    </div>
+
     <div class="demo-section">
-      <h2>基础列表示例</h2>
+      <h2>{{ enableVirtualScroll ? "虚拟滚动大数据演示" : "基础列表示例" }}</h2>
+      <p v-if="enableVirtualScroll" class="data-info">
+        共 {{ displayData.length }} 项数据，使用虚拟滚动优化渲染性能
+      </p>
       <div :class="['scroll-container', direction === 'horizontal' ? 'horizontal' : 'vertical']">
         <SeamlessScroll
           ref="scrollRef"
-          :data="listData"
+          :data="displayData"
           :direction="direction"
           :speed="speed"
           :pause-time="pauseTime"
           :hover-pause="pauseOnHover"
+          :virtual-scroll="enableVirtualScroll"
+          :virtual-scroll-buffer="3"
+          :data-total="displayData.length"
+          :item-size="direction === 'vertical' ? rowHeight : columnWidth"
+          :item-key="(item) => item.id"
           force-scrolling
           @itemClick="handleItemClick"
         >
@@ -135,6 +344,9 @@ const handleReset = () => {
             <div class="list-item" :style="getItemStyle(item, columnWidth, rowHeight)">
               {{ item.title }} ({{ index + 1 }})
             </div>
+          </template>
+          <template #empty>
+            <div class="empty-state">暂无数据，请添加数据或切换回正常模式</div>
           </template>
         </SeamlessScroll>
       </div>
@@ -161,12 +373,23 @@ h2 {
   color: #42b883;
 }
 
+h3 {
+  margin: 15px 0 10px;
+  color: #2c3e50;
+}
+
 .config-panel {
   background: white;
   border-radius: 8px;
   padding: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.virtual-scroll-panel {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #ddd;
 }
 
 .config-group {
@@ -185,10 +408,25 @@ h2 {
   flex: 1;
 }
 
+.data-count {
+  margin-left: 10px;
+  font-weight: bold;
+  color: #2196f3;
+  width: 100px;
+  text-align: right;
+}
+
+.data-info {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 10px;
+}
+
 .actions {
   display: flex;
   gap: 10px;
   margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .actions button {
@@ -205,6 +443,94 @@ h2 {
   background: #369a6e;
 }
 
+.performance-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.fps-display {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.fps-value {
+  width: 100px;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.fps-high {
+  color: #4caf50;
+}
+
+.fps-medium {
+  color: #ff9800;
+}
+
+.fps-low {
+  color: #f44336;
+}
+
+.fps-graph {
+  flex: 1;
+  height: 60px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 5px;
+  overflow: hidden;
+}
+
+.fps-bar {
+  flex: 1;
+  margin: 0 1px;
+  min-height: 3px;
+  background-color: #4caf50;
+  transition: height 0.2s ease-out;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+}
+
+.performance-message {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+.status-icon.good {
+  background-color: #e8f5e9;
+  color: #4caf50;
+}
+
+.status-icon.warning {
+  background-color: #fff3e0;
+  color: #ff9800;
+}
+
+.status-icon.bad {
+  background-color: #ffebee;
+  color: #f44336;
+}
+
 .demo-section {
   background: white;
   border-radius: 8px;
@@ -217,6 +543,7 @@ h2 {
   border-radius: 4px;
   margin-bottom: 20px;
   height: 200px;
+  overflow: hidden;
 }
 
 .list-item {
@@ -230,6 +557,15 @@ h2 {
 
 .list-item:hover {
   background: #f5f5f5;
+}
+
+.empty-state {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #9e9e9e;
+  font-style: italic;
 }
 
 .clicked-info {

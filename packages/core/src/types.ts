@@ -4,6 +4,7 @@ export type ScrollDirection = "vertical" | "horizontal";
 export type ElementOrGetter = HTMLElement | (() => HTMLElement | null);
 
 export interface ScrollOptions {
+  dataTotal?: number;
   /* 滚动方向：vertical（上下）或 horizontal（左右） */
   direction?: ScrollDirection;
   /* 滚动速度（像素/秒） */
@@ -18,6 +19,10 @@ export interface ScrollOptions {
   autoScroll?: boolean;
   /* 是否强制滚动（即使内容未超出容器） */
   forceScrolling?: boolean;
+  /* 虚拟滚动项目缓冲区大小（前后各多渲染几个项目） */
+  virtualScrollBuffer?: number;
+  /* 估计的每个项目高度/宽度（像素）- 用于初始计算 */
+  itemSize?: number;
 }
 
 export interface ScrollState {
@@ -37,6 +42,12 @@ export interface ScrollState {
   isScrollNeeded: boolean;
   /* 最小克隆数量 */
   minClones: number;
+  /* 虚拟滚动 - 可见项目的起始索引 */
+  startIndex: number;
+  /* 虚拟滚动 - 可见项目的结束索引 */
+  endIndex: number;
+  /* 虚拟滚动 - 是否启用 */
+  isVirtualized: boolean;
 }
 
 export interface ScrollMethods {
@@ -62,6 +73,8 @@ export interface ScrollMethods {
   clearObserver: () => void;
   /* 重置观察者，以观察最新的dom */
   resetObserver: () => void;
+  /* 获取当前虚拟滚动的可见范围 */
+  getVisibleRange: () => { startIndex: number; endIndex: number };
 }
 
 export interface SeamlessScrollResult {

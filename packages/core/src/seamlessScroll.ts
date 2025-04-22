@@ -7,14 +7,15 @@ import {
 } from "./types";
 
 // 默认配置
-export const DEFAULT_OPTIONS: Required<ScrollOptions> = {
+export const DEFAULT_OPTIONS: Required<Omit<ScrollOptions, "dataTotal" | "itemSize">> = {
   direction: "vertical",
   speed: 50,
   duration: 500,
   pauseTime: 2000,
   hoverPause: true,
   autoScroll: true,
-  forceScrolling: false,
+  forceScrolling: true,
+  virtualScrollBuffer: 5, // 虚拟滚动缓冲区大小，防止滚动时出现空白
 };
 
 // 创建带警告的只读状态
@@ -87,7 +88,13 @@ export const createSeamlessScroll = (
   };
 
   // 合并默认配置和用户配置
-  const config: Required<ScrollOptions> = { ...DEFAULT_OPTIONS, ...options };
+  const config: Required<Omit<ScrollOptions, "dataTotal" | "itemSize">> & {
+    dataTotal?: number;
+    itemSize?: number;
+  } = {
+    ...DEFAULT_OPTIONS,
+    ...options,
+  };
 
   // 状态
   const initialState: ScrollState = {
@@ -99,6 +106,9 @@ export const createSeamlessScroll = (
     contentSize: 0,
     containerSize: 0,
     minClones: 1,
+    startIndex: 0,
+    endIndex: 0,
+    isVirtualized: false,
   };
 
   const [state, setState] = useStateWithCallback(initialState, onStateChange);
@@ -158,13 +168,55 @@ export const createSeamlessScroll = (
 
     const isVertical = config.direction === "vertical";
 
+    const containerSize = isVertical ? currentContainer.clientHeight : currentContainer.clientWidth;
+    let contentSize = isVertical ? currentRealList.clientHeight : currentRealList.clientWidth;
+
+    // 自动检测是否应该启用虚拟滚动
+    // 如果内容区域大小超过容器大小的一定倍数，自动启用虚拟滚动
+    const realListChildren = currentRealList.children;
+    const childrenCount = realListChildren.length;
+
+    if (childrenCount > 0 && contentSize > containerSize * 3) {
+      // 如果有很多子元素并且内容远大于容器，自动启用虚拟滚动
+      if (!state.isVirtualized) {
+        const firstChild = realListChildren[0] as HTMLElement;
+        const firstChildSize = isVertical ? firstChild.offsetHeight : firstChild.offsetWidth;
+
+        // 估算项目大小为第一个子元素的大小
+        config.itemSize = config.itemSize || firstChildSize;
+        // 设置数据总量为子元素数量
+        config.dataTotal = config.dataTotal || childrenCount;
+        // 启用虚拟滚动
+        setState({ isVirtualized: true });
+
+        // 如果没有显式设置缓冲区大小，确保有合理的默认值
+        if (config.virtualScrollBuffer === undefined) {
+          config.virtualScrollBuffer = 5;
+        }
+      }
+    }
+
+    // 对于虚拟滚动，使用数据总量和项目大小来计算完整内容尺寸
+    if (state.isVirtualized) {
+      if (config.itemSize && config.dataTotal) {
+        contentSize = config.dataTotal * config.itemSize;
+      } else {
+        console.warn("虚拟滚动模式下，itemSize 和 dataTotal 是必填的");
+      }
+    }
+
     setState({
-      containerSize: isVertical ? currentContainer.clientHeight : currentContainer.clientWidth,
-      contentSize: isVertical ? currentRealList.clientHeight : currentRealList.clientWidth,
+      containerSize,
+      contentSize,
     });
 
     updateMinClones();
     updateScrollNeeded();
+
+    // 如果启用了虚拟滚动，更新可见项目
+    if (state.isVirtualized) {
+      updateVisibleItems();
+    }
   };
 
   // 更新配置
@@ -181,6 +233,61 @@ export const createSeamlessScroll = (
     }
   };
 
+  // 计算虚拟可视区域
+  const calculateVisibleRange = (scrollPosition: number, totalItems: number) => {
+    if (!config.itemSize) {
+      console.warn("虚拟滚动模式下，itemSize 是必填的");
+      // 返回全部范围而不是终止程序
+      return { startIndex: 0, endIndex: totalItems - 1 };
+    }
+    if (!state.isVirtualized || totalItems === 0) {
+      return { startIndex: 0, endIndex: totalItems - 1 };
+    }
+
+    const { itemSize, virtualScrollBuffer } = config;
+    const containerSize = state.containerSize;
+
+    // 计算当前滚动位置对应的起始项目索引
+    let startIndex = Math.floor(scrollPosition / itemSize);
+    startIndex = Math.max(0, startIndex - virtualScrollBuffer);
+
+    // 计算结束索引（带缓冲区）
+    const visibleCount = Math.ceil(containerSize / itemSize);
+
+    let endIndex = startIndex + visibleCount + 2 * virtualScrollBuffer;
+    endIndex = Math.min(totalItems - 1, endIndex);
+
+    return { startIndex, endIndex };
+  };
+
+  // 应用滚动位置时更新虚拟滚动范围
+  const updateVisibleItems = () => {
+    if (!state.isVirtualized) {
+      setState({
+        startIndex: 0,
+        endIndex: Infinity,
+        isVirtualized: false,
+      });
+      return;
+    }
+
+    const currentRealList = domRefs.getRealList();
+    if (!currentRealList) return;
+
+    // 获取总数据量
+    const totalItems = config.dataTotal || currentRealList.children.length;
+
+    // 根据当前滚动位置计算可见范围
+    const { startIndex, endIndex } = calculateVisibleRange(state.scrollDistance, totalItems);
+
+    // 更新状态
+    setState({
+      startIndex,
+      endIndex,
+      isVirtualized: true,
+    });
+  };
+
   // 应用滚动位置
   const applyScrollPosition = () => {
     const currentContent = domRefs.getContent();
@@ -190,6 +297,9 @@ export const createSeamlessScroll = (
     currentContent.style.transform = `translate${
       config.direction === "vertical" ? "Y" : "X"
     }(${-state.scrollDistance}px)`;
+
+    // 更新虚拟滚动的可见项目
+    updateVisibleItems();
   };
 
   // 停止滚动
@@ -463,6 +573,10 @@ export const createSeamlessScroll = (
     setObserver,
     clearObserver,
     resetObserver,
+    getVisibleRange: () => ({
+      startIndex: state.startIndex,
+      endIndex: state.endIndex,
+    }),
   };
 
   // 初始化
