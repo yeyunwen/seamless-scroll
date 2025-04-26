@@ -1,24 +1,27 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T">
 import { DEFAULT_OPTIONS } from "@seamless-scroll/core";
 import type { SeamlessScrollRef } from "@seamless-scroll/shared";
-import { useSeamlessScroll } from "./useSeamlessScroll";
-import { computed, watch, nextTick, CSSProperties } from "vue";
+import { useSeamlessScroll, VirtualScrollItem } from "./useSeamlessScroll";
+import { computed, watch, nextTick, CSSProperties, ref, onMounted, onUnmounted } from "vue";
 import { HooksProps, VueSeamlessScrollProps, VueSeamlessScrollStyles } from "./types";
 
 // 基本 props 定义
-const props = withDefaults(defineProps<VueSeamlessScrollProps>(), {
+const props = withDefaults(defineProps<VueSeamlessScrollProps<T>>(), {
   ...DEFAULT_OPTIONS,
   containerWidth: "100%",
   containerHeight: "100%",
   virtualScrollBuffer: 5,
-  itemSize: 50,
+  itemSize: undefined, // 可以不设置固定高度
+  minItemSize: undefined, // 设置默认的最小项目尺寸，确保至少有一个尺寸参数存在
 });
 
 // 定义自定义事件
 const emit = defineEmits<{
-  // TODO: item 类型优化
-  (e: "itemClick", item: any, index: number): void;
+  (e: "itemClick", item: T, index: number): void;
 }>();
+
+// 存储项目元素引用和观察者
+const itemElements = ref<Map<number, HTMLElement>>(new Map());
 
 const hooksProps = computed<HooksProps>(() => {
   return {
@@ -31,37 +34,17 @@ const hooksProps = computed<HooksProps>(() => {
     forceScrolling: props.autoScroll,
     virtualScrollBuffer: props.virtualScrollBuffer,
     itemSize: props.itemSize,
-    dataTotal: props.dataTotal,
+    minItemSize: props.minItemSize,
+    dataTotal: props.data.length,
   };
 });
 
-// 使用滚动 hook
+// 使用滚动 hook，传递泛型参数T
 const { containerRef, contentRef, realListRef, state, methods, getVirtualItems } =
-  useSeamlessScroll(hooksProps);
+  useSeamlessScroll<T>(hooksProps);
 
-// 根据虚拟滚动获取需要渲染的项目列表
-const virtualItems = computed(() => {
-  return getVirtualItems(props.data);
-});
-
-// 计算克隆列表项目 - 只包含可见区域的项目
-const cloneItems = computed(() => {
-  if (!state.value.isVirtualized) {
-    return props.data;
-  }
-
-  // 计算可见项目数量
-  const isVertical = props.direction === "vertical";
-  const containerSize = isVertical
-    ? containerRef.value?.clientHeight || 0
-    : containerRef.value?.clientWidth || 0;
-  const itemSize = props.itemSize;
-
-  // 计算容器中可显示的项目数量，增加一个缓冲
-  const visibleCount = Math.ceil(containerSize / itemSize) + 2;
-
-  // 从原始数据中截取前visibleCount个项目
-  return props.data.slice(0, Math.min(visibleCount, props.data.length));
+const isVertical = computed(() => {
+  return props.direction === "vertical";
 });
 
 // 是否启用了虚拟滚动
@@ -72,21 +55,13 @@ const isVirtualized = computed(() => {
 // 获取虚拟滚动的起始索引
 const startIndex = computed(() => state.value.startIndex);
 
-// 为项目生成唯一键
-const getItemKey = (item: any, index: number, prefix = "") => {
-  if (!props.itemKey) return `${prefix}-${index}`;
-
-  if (typeof props.itemKey === "function") {
-    return `${prefix}-${props.itemKey(item, index)}`;
-  }
-
-  return `${prefix}-${item[props.itemKey] ?? index}`;
-};
+// 根据虚拟滚动获取需要渲染的项目列表
+const virtualItems = computed<VirtualScrollItem<T>[]>(() => {
+  return getVirtualItems(props.data);
+});
 
 // 集中所有样式逻辑
 const styles = computed<VueSeamlessScrollStyles>(() => {
-  const isVertical = props.direction === "vertical";
-
   return {
     container: {
       height:
@@ -102,7 +77,7 @@ const styles = computed<VueSeamlessScrollStyles>(() => {
     },
     content: {
       display: "flex",
-      flexDirection: isVertical ? "column" : "row",
+      flexDirection: isVertical.value ? "column" : "row",
       willChange: "transform",
       position: "relative",
       height: "100%",
@@ -110,7 +85,7 @@ const styles = computed<VueSeamlessScrollStyles>(() => {
     },
     list: {
       display: "flex",
-      flexDirection: isVertical ? "column" : "row",
+      flexDirection: isVertical.value ? "column" : "row",
     },
     item: {
       boxSizing: "border-box",
@@ -125,56 +100,115 @@ const styles = computed<VueSeamlessScrollStyles>(() => {
   };
 });
 
+// 计算克隆列表项目 - 只包含可见区域的项目
+const virtualCloneItems = computed<T[]>(() => {
+  const { startIndex, endIndex } = methods.getVirtualCloneRange();
+  return props.data.slice(startIndex, endIndex);
+});
+
 // 为虚拟滚动优化，确保realList容器维持完整高度
 const getVirtualRealListStyle = computed<CSSProperties>(() => {
-  if (!state.value.isVirtualized || !props.itemSize || !props.dataTotal) {
+  if (!state.value.isVirtualized) {
     return {};
   }
-  const isVertical = props.direction === "vertical";
-  const totalSize = props.dataTotal * props.itemSize;
-  if (isVertical) {
+
+  if (isVertical.value) {
     return {
       position: "relative",
-      height: `${totalSize}px`,
-      minHeight: `${totalSize}px`,
+      minHeight: `${state.value.contentSize}px`,
     };
   }
+
   return {
     position: "relative",
-    width: `${totalSize}px`,
-    minWidth: `${totalSize}px`,
+    minWidth: `${state.value.contentSize}px`,
     height: "100%",
   };
 });
 
+// 手动测量当前所有项目
+const measureAllItems = () => {
+  if (!state.value.isVirtualized) return;
+
+  itemElements.value.forEach((el, index) => {
+    if (el && document.body.contains(el)) {
+      const size = isVertical.value ? el.offsetHeight : el.offsetWidth;
+
+      if (size > 0) {
+        // 确保尺寸不小于minItemSize
+        const minSize = props.minItemSize;
+        const constrainedSize = Math.max(size, minSize);
+
+        // 获取元素的类型
+        const type = el.dataset.itemType;
+        // 更新到 Core
+        methods.updateItemSizeList(index, constrainedSize, type);
+      }
+    }
+  });
+};
+
 // 计算虚拟滚动项的位置偏移
 const getVirtualItemStyle = (index: number): CSSProperties => {
-  if (!state.value.isVirtualized || !props.itemSize) {
+  if (!state.value.isVirtualized) {
     return {};
   }
 
-  const totalItems = props.dataTotal || props.data.length;
+  const totalItems = props.data.length;
 
   // 确保索引始终在原始数据范围内
   const normalizedIndex = totalItems > 0 ? index % totalItems : 0;
 
-  // 计算真实位置
-  const position = props.itemSize * normalizedIndex;
-  const isVertical = props.direction === "vertical";
+  // 计算真实位置 - 使用预测函数获取更准确的位置
+  let position = 0;
+
+  // 计算该项之前所有项目的累积尺寸
+  for (let i = 0; i < normalizedIndex; i++) {
+    position += methods.predictItemSize(i);
+  }
 
   return {
     position: "absolute",
-    transform: isVertical ? `translateY(${position}px)` : `translateX(${position}px)`,
-    [isVertical ? "height" : "width"]: `${props.itemSize}px`,
+    transform: isVertical.value ? `translateY(${position}px)` : `translateX(${position}px)`,
+    ...(props.itemSize ? { [isVertical.value ? "height" : "width"]: `${props.itemSize}px` } : {}),
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
   };
 };
 
 // 处理项目点击
-const handleItemClick = (item: any, index: number) => {
+const handleItemClick = (item: T, index: number) => {
   emit("itemClick", item, index);
+};
+
+// 拿到项目元素
+const itemRef = (el: any, item: VirtualScrollItem<T>, i: number) => {
+  if (!el) return;
+
+  const index = item._originalIndex;
+  const type = typeof (item as any).type === "string" ? (item as any).type : undefined;
+  // 获取元素的尺寸
+  const size = isVertical.value ? el.offsetHeight : el.offsetWidth;
+  // 更新到 Core
+  methods.updateItemSizeList(index, size, type);
+  // 添加到 DOM 引用映射
+  itemElements.value.set(index, el);
+
+  // 为 DOM 元素添加数据属性
+  el.dataset.index = index.toString();
+  if (type) {
+    el.dataset.itemType = type;
+  }
+};
+
+// 为项目生成唯一键
+const getItemKey = (item: T, index: number, prefix = "") => {
+  if (!props.itemKey) return `${prefix}-${index}`;
+
+  if (typeof props.itemKey === "function") {
+    return `${prefix}-${props.itemKey(item, index)}`;
+  }
+
+  return `${prefix}-${item[props.itemKey] ?? index}`;
 };
 
 watch(
@@ -182,16 +216,31 @@ watch(
   (newVal) => {
     if (!newVal.length) {
       methods.clearObserver();
+      itemElements.value.clear();
     } else {
       nextTick(() => {
         methods.reset();
         methods.updateSize();
         // 重新设置 observer
         methods.resetObserver();
+        // 延迟测量所有项目
+        setTimeout(measureAllItems, 50);
       });
     }
   },
 );
+
+// 当挂载或更新时测量所有项目
+onMounted(() => {
+  nextTick(() => {
+    measureAllItems();
+  });
+});
+
+// 清理观察者
+onUnmounted(() => {
+  itemElements.value.clear();
+});
 
 // 暴露方法
 defineExpose<SeamlessScrollRef>({
@@ -205,6 +254,8 @@ defineExpose<SeamlessScrollRef>({
   setObserver: methods.setObserver,
   clearObserver: methods.clearObserver,
   resetObserver: methods.resetObserver,
+  updateItemSizeList: methods.updateItemSizeList,
+  predictItemSize: methods.predictItemSize,
 });
 </script>
 
@@ -224,7 +275,10 @@ defineExpose<SeamlessScrollRef>({
       <div
         ref="realListRef"
         class="seamless-scroll-real-list"
-        :style="{ ...styles.list, ...getVirtualRealListStyle }"
+        :style="{
+          ...styles.list,
+          ...getVirtualRealListStyle,
+        }"
       >
         <!-- 虚拟滚动时只渲染可见项目 -->
         <template v-if="isVirtualized">
@@ -234,21 +288,14 @@ defineExpose<SeamlessScrollRef>({
             :key="getItemKey(item, i, 'real')"
             :style="{
               ...styles.item,
-              ...getVirtualItemStyle(
-                item._virtualScrollOriginalIndex ?? (startIndex + i) % data.length,
-              ),
+              ...getVirtualItemStyle(item._originalIndex),
             }"
-            @click="
-              handleItemClick(
-                item,
-                item._virtualScrollOriginalIndex ?? (startIndex + i) % data.length,
-              )
-            "
+            @click="handleItemClick(item, item._originalIndex)"
+            :ref="(el) => itemRef(el, item, i)"
+            :data-index="item._originalIndex"
+            :data-item-type="(item as any).type"
           >
-            <slot
-              :item="item"
-              :index="item._virtualScrollOriginalIndex ?? (startIndex + i) % data.length"
-            >
+            <slot :item="item" :index="item._originalIndex">
               {{ JSON.stringify(item) }}
             </slot>
           </div>
@@ -257,9 +304,11 @@ defineExpose<SeamlessScrollRef>({
         <template v-else>
           <div
             v-for="(item, index) in data"
-            class="seamless-scroll-item"
             :key="getItemKey(item, index, 'real')"
+            class="seamless-scroll-item"
             :style="styles.item"
+            :data-index="index"
+            :data-item-type="(item as any).type"
             @click="handleItemClick(item, index)"
           >
             <slot :item="item" :index="index">
@@ -279,7 +328,7 @@ defineExpose<SeamlessScrollRef>({
         <!-- 虚拟滚动的克隆列表 -->
         <template v-if="isVirtualized">
           <div
-            v-for="(item, index) in cloneItems"
+            v-for="(item, index) in virtualCloneItems"
             class="seamless-scroll-item"
             :key="getItemKey(item, index, `clone-${cloneIndex}`)"
             :style="styles.item"

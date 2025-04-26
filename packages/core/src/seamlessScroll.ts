@@ -5,9 +5,12 @@ import {
   ScrollState,
   SeamlessScrollResult,
 } from "./types";
+import { isNumber, createReadOnlyState, useStateWithCallback } from "./utils";
 
 // 默认配置
-export const DEFAULT_OPTIONS: Required<Omit<ScrollOptions, "dataTotal" | "itemSize">> = {
+export const DEFAULT_OPTIONS: Required<
+  Omit<ScrollOptions, "dataTotal" | "itemSize" | "minItemSize">
+> = {
   direction: "vertical",
   speed: 50,
   duration: 500,
@@ -18,60 +21,11 @@ export const DEFAULT_OPTIONS: Required<Omit<ScrollOptions, "dataTotal" | "itemSi
   virtualScrollBuffer: 5, // 虚拟滚动缓冲区大小，防止滚动时出现空白
 };
 
-// 创建带警告的只读状态
-const createReadOnlyState = <T extends ScrollState>(state: T): Readonly<T> => {
-  return new Proxy(state, {
-    get: (target, prop) => target[prop as keyof T],
-    set: (_, prop) => {
-      console.warn(
-        `You cannot modify the state directly .${String(
-          prop,
-        )}Use methods [updateOptions] to update the state`,
-      );
-      return false;
-    },
-  });
-};
-
-const throttle = (fn: (...args: any[]) => void, delay: number) => {
-  let lastCall = 0;
-  return function (this: any, ...args: any[]) {
-    const now = Date.now();
-    if (now - lastCall >= delay) {
-      lastCall = now;
-      return fn.apply(this, args);
-    }
-  };
-};
-
-const useStateWithCallback = (
-  initialState: ScrollState,
-  onStateChange?: (state: ScrollState) => void,
-) => {
-  const state = { ...initialState };
-
-  const throttledOnStateChange = onStateChange
-    ? throttle((newState: ScrollState) => {
-        // 返回一个新对象，避免vue watch无法监听
-        onStateChange({ ...newState });
-      }, 16) // 约60fps的刷新率
-    : undefined;
-
-  const dispatch = (newState: Partial<ScrollState>) => {
-    Object.assign(state, newState);
-    if (throttledOnStateChange) {
-      throttledOnStateChange({ ...state });
-    }
-  };
-
-  return [state, dispatch] as const;
-};
-
 export const createSeamlessScroll = (
   containerEl: ElementOrGetter,
   contentEl: ElementOrGetter,
   realListEl: ElementOrGetter,
-  options: ScrollOptions = {},
+  options: ScrollOptions,
   onStateChange?: (state: ScrollState) => void,
 ): SeamlessScrollResult => {
   // 创建获取 DOM 元素的函数
@@ -87,10 +41,17 @@ export const createSeamlessScroll = (
     getRealList: () => getRealList(),
   };
 
+  // 参数验证：确保itemSize和minItemSize至少有一个存在
+  if (!isNumber(options.itemSize) && !isNumber(options.minItemSize)) {
+    console.error("错误：itemSize和minItemSize不能同时为空，将使用默认值50作为minItemSize");
+    process.exit(1);
+  }
+
   // 合并默认配置和用户配置
-  const config: Required<Omit<ScrollOptions, "dataTotal" | "itemSize">> & {
-    dataTotal?: number;
+  const config: Required<Omit<ScrollOptions, "dataTotal" | "itemSize" | "minItemSize">> & {
+    dataTotal: number;
     itemSize?: number;
+    minItemSize?: number;
   } = {
     ...DEFAULT_OPTIONS,
     ...options,
@@ -109,6 +70,10 @@ export const createSeamlessScroll = (
     startIndex: 0,
     endIndex: 0,
     isVirtualized: false,
+    itemSizeList: [],
+    averageSize: 0, // 添加平均尺寸
+    totalMeasuredItems: 0, // 添加已测量项目计数
+    typeSizes: {}, // 按类型统计的尺寸
   };
 
   const [state, setState] = useStateWithCallback(initialState, onStateChange);
@@ -125,6 +90,24 @@ export const createSeamlessScroll = (
   // 记录暂停前的位置
   let lastScrollPosition = 0;
 
+  const isVertical = () => {
+    return config.direction === "vertical";
+  };
+
+  const getBaseContainerSize = () => {
+    const currentContainer = domRefs.getContainer();
+    if (!currentContainer) return 0;
+
+    return isVertical() ? currentContainer.clientHeight : currentContainer.clientWidth;
+  };
+
+  const getBaseContentSize = () => {
+    const currentRealList = domRefs.getRealList();
+    if (!currentRealList) return 0;
+
+    return isVertical() ? currentRealList.clientHeight : currentRealList.clientWidth;
+  };
+
   // 计算最小克隆列表数量
   const updateMinClones = () => {
     let minClones: number;
@@ -139,6 +122,15 @@ export const createSeamlessScroll = (
     setState({
       minClones,
     });
+  };
+
+  const getVirtualCloneRange = () => {
+    const currentRealList = domRefs.getRealList();
+    if (!currentRealList) return { startIndex: 0, endIndex: 0 };
+
+    const { startIndex, endIndex } = calculateVisibleRange(0, config.dataTotal);
+
+    return { startIndex, endIndex };
   };
 
   // 计算是否需要滚动
@@ -166,57 +158,139 @@ export const createSeamlessScroll = (
 
     if (!currentContainer || !currentRealList) return;
 
-    const isVertical = config.direction === "vertical";
-
-    const containerSize = isVertical ? currentContainer.clientHeight : currentContainer.clientWidth;
-    let contentSize = isVertical ? currentRealList.clientHeight : currentRealList.clientWidth;
+    const containerSize = getBaseContainerSize();
+    const contentSize = getBaseContentSize();
 
     // 自动检测是否应该启用虚拟滚动
-    // 如果内容区域大小超过容器大小的一定倍数，自动启用虚拟滚动
-    const realListChildren = currentRealList.children;
-    const childrenCount = realListChildren.length;
-
-    if (childrenCount > 0 && contentSize > containerSize * 3) {
-      // 如果有很多子元素并且内容远大于容器，自动启用虚拟滚动
+    const realListChildrenLength = currentRealList.children.length;
+    // 如果有很多子元素并且内容远大于容器，自动启用虚拟滚动
+    if (realListChildrenLength > 0 && contentSize > containerSize) {
       if (!state.isVirtualized) {
-        const firstChild = realListChildren[0] as HTMLElement;
-        const firstChildSize = isVertical ? firstChild.offsetHeight : firstChild.offsetWidth;
-
-        // 估算项目大小为第一个子元素的大小
-        config.itemSize = config.itemSize || firstChildSize;
-        // 设置数据总量为子元素数量
-        config.dataTotal = config.dataTotal || childrenCount;
         // 启用虚拟滚动
         setState({ isVirtualized: true });
-
-        // 如果没有显式设置缓冲区大小，确保有合理的默认值
-        if (config.virtualScrollBuffer === undefined) {
-          config.virtualScrollBuffer = 5;
-        }
-      }
-    }
-
-    // 对于虚拟滚动，使用数据总量和项目大小来计算完整内容尺寸
-    if (state.isVirtualized) {
-      if (config.itemSize && config.dataTotal) {
-        contentSize = config.dataTotal * config.itemSize;
-      } else {
-        console.warn("虚拟滚动模式下，itemSize 和 dataTotal 是必填的");
       }
     }
 
     setState({
       containerSize,
-      contentSize,
+      contentSize: getContentSize(),
     });
-
-    updateMinClones();
-    updateScrollNeeded();
 
     // 如果启用了虚拟滚动，更新可见项目
     if (state.isVirtualized) {
       updateVisibleItems();
     }
+    updateMinClones();
+
+    updateScrollNeeded();
+  };
+
+  const getContentSize = () => {
+    const currentRealList = domRefs.getRealList();
+    if (!currentRealList) return 0;
+
+    if (state.isVirtualized) {
+      if (!config.dataTotal) return 0;
+
+      if (config.itemSize) {
+        // 固定高度
+        return config.dataTotal * config.itemSize;
+      } else {
+        // 变量高度 - 智能计算
+        let totalSize = 0;
+
+        // 否则结合已知尺寸和预测尺寸
+        for (let i = 0; i < config.dataTotal; i++) {
+          totalSize += predictItemSize(i);
+        }
+
+        return totalSize;
+      }
+    }
+
+    return getBaseContentSize();
+  };
+
+  // 尺寸预测函数
+  const predictItemSize = (index: number, type?: string): number => {
+    if (config.itemSize) {
+      return config.itemSize;
+    }
+
+    // 1. 已测量的精确尺寸 (保证不小于最小尺寸)
+    if (state.itemSizeList[index] > 0) {
+      return Math.max(state.itemSizeList[index], config.minItemSize!);
+    }
+
+    // 2. 同类型项目的平均尺寸 (保证不小于最小尺寸)
+    if (type && state.typeSizes[type]?.average > 0) {
+      return Math.max(state.typeSizes[type].average, config.minItemSize!);
+    }
+
+    // 3. 全局平均尺寸 (保证不小于最小尺寸)
+    if (state.averageSize > 0) {
+      return Math.max(state.averageSize, config.minItemSize!);
+    }
+
+    // 4. 最小尺寸
+    return config.minItemSize!;
+  };
+
+  // 修改更新尺寸列表函数，支持类型和统计
+  const updateItemSizeList = (index: number, size: number, type?: string) => {
+    const currentRealList = domRefs.getRealList();
+    if (!currentRealList) return;
+
+    // 应用最小尺寸约束
+    const minSize = config.minItemSize || 0;
+    const constrainedSize = Math.max(size, minSize);
+
+    const oldSize = state.itemSizeList[index];
+    const isNewMeasurement = !oldSize || oldSize <= 0;
+
+    // 更新项目尺寸列表
+    state.itemSizeList[index] = constrainedSize;
+
+    // 更新平均尺寸统计
+    if (isNewMeasurement) {
+      // 新测量的项目
+      state.totalMeasuredItems++;
+      state.averageSize =
+        (state.averageSize * (state.totalMeasuredItems - 1) + constrainedSize) /
+        state.totalMeasuredItems;
+    } else {
+      // 更新已测量项目
+      state.averageSize =
+        state.averageSize + (constrainedSize - oldSize) / state.totalMeasuredItems;
+    }
+
+    // 更新类型统计
+    if (type) {
+      if (!state.typeSizes[type]) {
+        state.typeSizes[type] = { total: 0, count: 0, average: 0 };
+      }
+
+      if (isNewMeasurement) {
+        // 新测量
+        state.typeSizes[type].count++;
+        state.typeSizes[type].total += constrainedSize;
+      } else {
+        // 更新测量
+        state.typeSizes[type].total = state.typeSizes[type].total - oldSize + constrainedSize;
+      }
+
+      // 重新计算类型平均值
+      state.typeSizes[type].average = state.typeSizes[type].total / state.typeSizes[type].count;
+    }
+
+    // 更新上次估计的内容尺寸
+    setState({
+      contentSize: getContentSize(),
+      itemSizeList: state.itemSizeList,
+      averageSize: state.averageSize,
+      totalMeasuredItems: state.totalMeasuredItems,
+      typeSizes: state.typeSizes,
+    });
   };
 
   // 更新配置
@@ -235,47 +309,97 @@ export const createSeamlessScroll = (
 
   // 计算虚拟可视区域
   const calculateVisibleRange = (scrollPosition: number, totalItems: number) => {
-    if (!config.itemSize) {
-      console.warn("虚拟滚动模式下，itemSize 是必填的");
-      // 返回全部范围而不是终止程序
-      return { startIndex: 0, endIndex: totalItems - 1 };
-    }
     if (!state.isVirtualized || totalItems === 0) {
       return { startIndex: 0, endIndex: totalItems - 1 };
     }
 
-    const { itemSize, virtualScrollBuffer } = config;
+    const { virtualScrollBuffer = DEFAULT_OPTIONS.virtualScrollBuffer } = config;
     const containerSize = state.containerSize;
 
-    // 计算当前滚动位置对应的起始项目索引
-    let startIndex = Math.floor(scrollPosition / itemSize);
-    startIndex = Math.max(0, startIndex - virtualScrollBuffer);
+    // 使用二分查找找到第一个可见项目
+    let startIndex = 0;
+    let endIndex = 0;
 
-    // 计算结束索引（带缓冲区）
-    const visibleCount = Math.ceil(containerSize / itemSize);
+    // find startIndex
+    if (config.itemSize) {
+      // 固定高度 - 简单除法
+      startIndex = Math.floor(scrollPosition / config.itemSize);
+      // 确保startIndex不会超出范围
+      startIndex = startIndex % totalItems;
+    } else {
+      // 变量高度 - 二分查找或线性扫描
+      if (state.totalMeasuredItems > totalItems * 0.7) {
+        // 足够的测量数据，用二分查找
+        let low = 0;
+        let high = totalItems - 1;
 
-    let endIndex = startIndex + visibleCount + 2 * virtualScrollBuffer;
-    endIndex = Math.min(totalItems - 1, endIndex);
+        while (low <= high) {
+          const mid = Math.floor((low + high) / 2);
+          let offset = 0;
+
+          // 计算到mid位置的偏移
+          for (let i = 0; i < mid; i++) {
+            offset += predictItemSize(i);
+          }
+
+          if (offset < scrollPosition) {
+            low = mid + 1;
+          } else {
+            high = mid - 1;
+          }
+        }
+
+        startIndex = Math.max(0, high);
+        // 确保不超出范围
+        startIndex = startIndex % totalItems;
+      } else {
+        // 测量数据不足，线性扫描
+        let offset = 0;
+        let foundIndex = false;
+
+        for (let i = 0; i < totalItems; i++) {
+          const size = predictItemSize(i);
+          if (offset >= scrollPosition) {
+            startIndex = i;
+            foundIndex = true;
+            break;
+          }
+          offset += size;
+        }
+
+        // 如果没找到合适的索引，重置到开始位置
+        if (!foundIndex) {
+          startIndex = 0;
+        }
+      }
+    }
+
+    // find visibleCount and endIndex
+    if (config.itemSize) {
+      // 固定高度
+      const visibleCount = Math.ceil(containerSize / config.itemSize);
+      endIndex = Math.min(totalItems - 1, startIndex + visibleCount + 2 * virtualScrollBuffer);
+    } else {
+      // 变量高度 - 累加直到超过容器尺寸
+      let currentSize = 0;
+      endIndex = startIndex;
+      while (currentSize < containerSize && endIndex < totalItems) {
+        currentSize += predictItemSize(endIndex);
+        endIndex++;
+      }
+
+      // 添加缓冲区，确保不超出范围
+      endIndex = Math.min(totalItems - 1, endIndex + virtualScrollBuffer);
+    }
+    startIndex = Math.max(0, Math.min(totalItems - 1, startIndex - virtualScrollBuffer));
 
     return { startIndex, endIndex };
   };
 
   // 应用滚动位置时更新虚拟滚动范围
   const updateVisibleItems = () => {
-    if (!state.isVirtualized) {
-      setState({
-        startIndex: 0,
-        endIndex: Infinity,
-        isVirtualized: false,
-      });
-      return;
-    }
-
-    const currentRealList = domRefs.getRealList();
-    if (!currentRealList) return;
-
     // 获取总数据量
-    const totalItems = config.dataTotal || currentRealList.children.length;
+    const totalItems = config.dataTotal;
 
     // 根据当前滚动位置计算可见范围
     const { startIndex, endIndex } = calculateVisibleRange(state.scrollDistance, totalItems);
@@ -295,11 +419,13 @@ export const createSeamlessScroll = (
 
     // 通过 CSS transform 实现平滑滚动
     currentContent.style.transform = `translate${
-      config.direction === "vertical" ? "Y" : "X"
+      isVertical() ? "Y" : "X"
     }(${-state.scrollDistance}px)`;
 
-    // 更新虚拟滚动的可见项目
-    updateVisibleItems();
+    if (state.isVirtualized) {
+      // 更新虚拟滚动的可见项目
+      updateVisibleItems();
+    }
   };
 
   // 停止滚动
@@ -363,7 +489,28 @@ export const createSeamlessScroll = (
       // 检查是否需要重置位置
       if (newScrollDistance >= state.contentSize) {
         // 无缝重置：不直接跳回0，而是减去一个内容高度/宽度，这样看起来是连续的
-        setState({ scrollDistance: newScrollDistance - state.contentSize });
+        // 计算规范化的偏移量
+        const normalizedOffset = newScrollDistance % state.contentSize;
+
+        // 仅在启用虚拟滚动时才重新计算startIndex
+        if (state.isVirtualized && config.dataTotal) {
+          // 使用当前函数计算新的索引，而不是简单地设为0
+          const { startIndex: newStartIndex } = calculateVisibleRange(
+            normalizedOffset,
+            config.dataTotal,
+          );
+
+          // 更新状态，包括规范化的滚动距离和计算出的索引
+          setState({
+            scrollDistance: normalizedOffset,
+            startIndex: newStartIndex,
+          });
+        } else {
+          // 非虚拟滚动模式，只更新滚动距离
+          setState({
+            scrollDistance: normalizedOffset,
+          });
+        }
       } else {
         setState({ scrollDistance: newScrollDistance });
       }
@@ -560,7 +707,7 @@ export const createSeamlessScroll = (
     }
   };
 
-  // 暴露方法
+  // 更新暴露的方法
   const methods: ScrollMethods = {
     start: startScroll,
     stop: stopScroll,
@@ -573,10 +720,10 @@ export const createSeamlessScroll = (
     setObserver,
     clearObserver,
     resetObserver,
-    getVisibleRange: () => ({
-      startIndex: state.startIndex,
-      endIndex: state.endIndex,
-    }),
+    updateItemSizeList: (index: number, size: number, type?: string) =>
+      updateItemSizeList(index, size, type),
+    predictItemSize: (index: number, type?: string) => predictItemSize(index, type), // 暴露预测方法
+    getVirtualCloneRange,
   };
 
   // 初始化

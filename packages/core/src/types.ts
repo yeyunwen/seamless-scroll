@@ -4,7 +4,8 @@ export type ScrollDirection = "vertical" | "horizontal";
 export type ElementOrGetter = HTMLElement | (() => HTMLElement | null);
 
 export interface ScrollOptions {
-  dataTotal?: number;
+  /* 数据总数 */
+  dataTotal: number;
   /* 滚动方向：vertical（上下）或 horizontal（左右） */
   direction?: ScrollDirection;
   /* 滚动速度（像素/秒） */
@@ -21,8 +22,14 @@ export interface ScrollOptions {
   forceScrolling?: boolean;
   /* 虚拟滚动项目缓冲区大小（前后各多渲染几个项目） */
   virtualScrollBuffer?: number;
-  /* 估计的每个项目高度/宽度（像素）- 用于初始计算 */
+  /* 估计的每个项目高度/宽度（像素）- 用于初始计算
+   * 注意：itemSize和minItemSize至少需要设置一个，否则将无法正确计算滚动位置
+   */
   itemSize?: number;
+  /* 最小项目高度/宽度（像素）- 防止项目尺寸过小导致滚动位置回退
+   * 注意：itemSize和minItemSize至少需要设置一个，否则将无法正确计算滚动位置
+   */
+  minItemSize?: number;
 }
 
 export interface ScrollState {
@@ -48,6 +55,14 @@ export interface ScrollState {
   endIndex: number;
   /* 虚拟滚动 - 是否启用 */
   isVirtualized: boolean;
+  /* 动态大小虚拟滚动 - 项目尺寸列表 */
+  itemSizeList: number[];
+  /* 动态大小虚拟滚动 - 平均项目尺寸 */
+  averageSize: number;
+  /* 动态大小虚拟滚动 - 已测量项目数量 */
+  totalMeasuredItems: number;
+  /* 动态大小虚拟滚动 - 按类型统计的尺寸 */
+  typeSizes: Record<string, { total: number; count: number; average: number }>;
 }
 
 export interface ScrollMethods {
@@ -73,8 +88,12 @@ export interface ScrollMethods {
   clearObserver: () => void;
   /* 重置观察者，以观察最新的dom */
   resetObserver: () => void;
-  /* 获取当前虚拟滚动的可见范围 */
-  getVisibleRange: () => { startIndex: number; endIndex: number };
+  /* 更新指定索引项目的尺寸缓存 (用于动态高度) */
+  updateItemSizeList: (index: number, size: number, type?: string) => void;
+  /* 预测指定索引项目的尺寸 */
+  predictItemSize: (index: number, type?: string) => number;
+  /* 获取虚拟克隆范围 */
+  getVirtualCloneRange: () => { startIndex: number; endIndex: number };
 }
 
 export interface SeamlessScrollResult {

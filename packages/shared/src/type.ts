@@ -1,9 +1,10 @@
 import type { ScrollOptions } from "@seamless-scroll/core";
 
 /* 框架特定的类型 */
-export interface SeamlessScrollProps<S = Record<string, any>> extends ScrollOptions {
+export interface SeamlessScrollProps<T = any, S = Record<string, any>>
+  extends Omit<ScrollOptions, "dataTotal"> {
   /* 数据源 */
-  data: any[];
+  data: T[];
   /* 容器高度（像素或CSS值） */
   containerHeight?: number | string;
   /* 容器宽度（像素或CSS值） */
@@ -33,4 +34,6 @@ export interface SeamlessScrollRef {
   setObserver: (container: HTMLElement, realList: HTMLElement) => void;
   resetObserver: () => void;
   clearObserver: () => void;
+  updateItemSizeList: (index: number, size: number, type?: string) => void;
+  predictItemSize: (index: number, type?: string) => number;
 }

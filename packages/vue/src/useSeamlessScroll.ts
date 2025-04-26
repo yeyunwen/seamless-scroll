@@ -7,7 +7,12 @@ import {
 import { computed, onBeforeUnmount, onMounted, ref, watchEffect, type Ref } from "vue";
 import { HooksProps } from "./types";
 
-export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
+// 定义虚拟滚动项的通用接口，支持泛型
+export type VirtualScrollItem<T = any> = T & {
+  _originalIndex: number;
+};
+
+export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
   // 引用DOM元素
   const containerRef = ref<HTMLElement | null>(null);
   const contentRef = ref<HTMLElement | null>(null);
@@ -27,6 +32,12 @@ export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
     startIndex: 0,
     endIndex: 0,
     scrollDistance: 0,
+    contentSize: 0,
+    containerSize: 0,
+    itemSizeList: [] as number[],
+    totalMeasuredItems: 0,
+    averageSize: 0,
+    typeSizes: {} as Record<string, { total: number; count: number; average: number }>,
   });
 
   // 将属性转换为核心库选项
@@ -41,6 +52,7 @@ export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
       forceScrolling: hooksProps.value.forceScrolling,
       virtualScrollBuffer: hooksProps.value.virtualScrollBuffer,
       itemSize: hooksProps.value.itemSize,
+      minItemSize: hooksProps.value.minItemSize,
       dataTotal: hooksProps.value.dataTotal,
     };
   });
@@ -69,38 +81,20 @@ export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
   };
 
   // 获取虚拟化项目的范围（用于渲染）
-  const getVirtualItems = (items: any[]) => {
-    if (!scrollState.value.isVirtualized) {
-      return items;
-    }
-
+  const getVirtualItems = <ItemType = T>(items: ItemType[]): VirtualScrollItem<ItemType>[] => {
     const { startIndex, endIndex } = scrollState.value;
+    if (items.length === 0) return [];
 
-    // 如果items为空，直接返回
-    if (items.length === 0) {
-      return items;
-    }
+    // 只返回可见范围内的项目，不要累积
+    const result: VirtualScrollItem<ItemType>[] = [];
+    const itemsToRender = Math.min(endIndex - startIndex + 1, items.length);
 
-    // 构建一个新的数组，确保所有索引都在有效范围内
-    const result: any[] = [];
-
-    // 计算需要渲染的项目数量
-    const itemsToRender = Math.min(endIndex - startIndex + 1, items.length * 2);
-
-    // 循环添加项目，确保索引在有效范围内
     for (let i = 0; i < itemsToRender; i++) {
-      // 计算真实索引，确保在0到items.length-1之间
       const realIndex = (startIndex + i) % items.length;
-      const item = items[realIndex];
-
-      // 在结果中添加对原始数据的引用，而不是复制
-      // 这避免了在滚动时呈现不存在的项目（如101、102等）
       result.push({
-        ...item,
-        // 添加一个隐藏的标记，表示这是原始索引
-        // 这不会影响UI，但可以帮助我们跟踪实际位置
-        _virtualScrollOriginalIndex: realIndex,
-      });
+        ...items[realIndex],
+        _originalIndex: realIndex,
+      } as VirtualScrollItem<ItemType>);
     }
 
     return result;
@@ -123,9 +117,10 @@ export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
           speed: hooksProps.value.speed,
           virtualScrollBuffer: hooksProps.value.virtualScrollBuffer,
           itemSize: hooksProps.value.itemSize,
+          minItemSize: hooksProps.value.minItemSize,
           dataTotal: hooksProps.value.dataTotal,
         };
-
+        console.log("updateOptions", newOptions);
         scrollInstance.methods.updateOptions(newOptions);
       }
     });
@@ -153,8 +148,11 @@ export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
       scrollInstance?.methods.setObserver(container, realList),
     clearObserver: () => scrollInstance?.methods.clearObserver(),
     resetObserver: () => scrollInstance?.methods.resetObserver(),
-    getVisibleRange: () =>
-      scrollInstance?.methods.getVisibleRange() || { startIndex: 0, endIndex: 0 },
+    updateItemSizeList: (index: number, size: number, type?: string) =>
+      scrollInstance?.methods.updateItemSizeList(index, size, type),
+    predictItemSize: (index: number, type?: string) =>
+      scrollInstance?.methods.predictItemSize?.(index, type) || 0,
+    getVirtualCloneRange: () => scrollInstance?.methods.getVirtualCloneRange(),
   };
 
   return {
@@ -166,7 +164,6 @@ export const useSeamlessScroll = (hooksProps: Ref<HooksProps>) => {
     state: scrollState,
     // methods
     methods,
-    // 虚拟滚动辅助函数
     getVirtualItems,
   };
 };
