@@ -12,6 +12,10 @@ const rowHeight = ref(40);
 const columnWidth = ref(200);
 const scrollRef = ref();
 
+// 不定高度选项
+const useDynamicSize = ref(false);
+const minItemSize = ref(40); // 添加最小项目尺寸
+
 // 数据
 const listData = ref<ListItem[]>(initListData);
 
@@ -35,10 +39,18 @@ const generateLargeData = () => {
   const newData: ListItem[] = [];
 
   for (let i = 0; i < count; i++) {
+    // 在动态大小模式下，为每个项目设置随机高度倍数
+    const heightMultiplier = useDynamicSize.value ? Math.floor(Math.random() * 3) + 1 : 1;
+
     newData.push({
       id: i,
       title: `大数据项 ${i}`,
       color: getRandomColor(),
+      heightMultiplier, // 新增：高度乘数，用于控制项目高度
+      content:
+        useDynamicSize.value && heightMultiplier > 1
+          ? `这是一个高度为基础高度 ${heightMultiplier} 倍的项目，展示动态大小效果。`
+          : undefined,
     });
   }
 
@@ -74,6 +86,22 @@ const getRandomColor = () => {
 // 当前显示的数据
 const displayData = computed(() => {
   return enableVirtualScroll.value ? largeDataItems.value : listData.value;
+});
+
+// 计算要传递给组件的itemSize
+const computedItemSize = computed(() => {
+  if (useDynamicSize.value) {
+    return undefined; // 不定高度模式，传递undefined
+  }
+  return direction.value === "vertical" ? rowHeight.value : columnWidth.value;
+});
+
+// 计算要传递的最小项目尺寸
+const computedMinItemSize = computed(() => {
+  if (!useDynamicSize.value) {
+    return undefined; // 固定高度模式不需要最小尺寸
+  }
+  return minItemSize.value;
 });
 
 // 启动FPS监控
@@ -185,10 +213,33 @@ watch(enableVirtualScroll, (newValue) => {
   toggleVirtualScroll(newValue);
 });
 
+// 监听useDynamicSize变化
+watch(useDynamicSize, () => {
+  generateLargeData();
+  resetScroll();
+});
+
 // 重新生成数据
 const regenerateData = () => {
   generateLargeData();
   resetScroll();
+};
+
+// 根据项目的heightMultiplier属性获取项目样式
+const getDynamicItemStyle = (item: any, columnW: number, rowH: number) => {
+  const baseStyle = getItemStyle(item, columnW, rowH);
+
+  if (useDynamicSize.value && item.heightMultiplier) {
+    const height = Math.max(rowH * item.heightMultiplier, minItemSize.value);
+    const size =
+      direction.value === "vertical"
+        ? { height: `${height}px` }
+        : { width: `${Math.max(columnW * item.heightMultiplier, minItemSize.value)}px` };
+
+    return { ...baseStyle, ...size };
+  }
+
+  return baseStyle;
 };
 
 onMounted(() => {
@@ -233,12 +284,35 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="config-group">
-        <label>行高: {{ rowHeight }}px</label>
-        <input type="range" v-model.number="rowHeight" min="20" max="80" step="5" />
+        <label>
+          <input type="checkbox" v-model="useDynamicSize" />
+          不定高度模式
+        </label>
+        <span class="option-description">
+          {{ useDynamicSize ? "已启用动态大小，项目尺寸将不固定" : "固定大小模式" }}
+        </span>
       </div>
-      <div class="config-group">
-        <label>列宽: {{ columnWidth }}px</label>
-        <input type="range" v-model.number="columnWidth" min="120" max="400" step="5" />
+
+      <div class="config-group" v-if="useDynamicSize">
+        <label>最小项目尺寸: {{ minItemSize }}px</label>
+        <input type="range" v-model.number="minItemSize" min="40" max="120" step="5" />
+        <span class="option-description"> 防止项目尺寸过小导致滚动位置回退 </span>
+      </div>
+
+      <div class="config-group" v-if="!useDynamicSize">
+        <label
+          >{{ direction === "vertical" ? "行高" : "列宽" }}:
+          {{ direction === "vertical" ? rowHeight : columnWidth }}px</label
+        >
+        <input
+          v-if="direction === 'vertical'"
+          type="range"
+          v-model.number="rowHeight"
+          min="20"
+          max="80"
+          step="5"
+        />
+        <input v-else type="range" v-model.number="columnWidth" min="120" max="400" step="5" />
       </div>
 
       <div class="virtual-scroll-panel">
@@ -320,7 +394,10 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="demo-section">
-      <h2>{{ enableVirtualScroll ? "虚拟滚动大数据演示" : "基础列表示例" }}</h2>
+      <h2>
+        {{ enableVirtualScroll ? "虚拟滚动大数据演示" : "基础列表示例" }}
+        {{ useDynamicSize ? "（不定高度模式）" : "（固定尺寸）" }}
+      </h2>
       <p v-if="enableVirtualScroll" class="data-info">
         共 {{ displayData.length }} 项数据，使用虚拟滚动优化渲染性能
       </p>
@@ -335,14 +412,17 @@ onBeforeUnmount(() => {
           :virtual-scroll="enableVirtualScroll"
           :virtual-scroll-buffer="3"
           :data-total="displayData.length"
-          :item-size="direction === 'vertical' ? rowHeight : columnWidth"
+          :item-size="computedItemSize"
+          :min-item-size="computedMinItemSize"
           :item-key="(item) => item.id"
-          force-scrolling
           @itemClick="handleItemClick"
         >
           <template #default="{ item, index }">
-            <div class="list-item" :style="getItemStyle(item, columnWidth, rowHeight)">
-              {{ item.title }} ({{ index + 1 }})
+            <div class="list-item" :style="getDynamicItemStyle(item, columnWidth, rowHeight)">
+              <div class="item-title">{{ item.title }} ({{ index + 1 }})</div>
+              <div v-if="item.content" class="item-content">
+                {{ item.content }}
+              </div>
             </div>
           </template>
           <template #empty>
@@ -406,6 +486,12 @@ h3 {
 
 .config-group input[type="range"] {
   flex: 1;
+}
+
+.option-description {
+  margin-left: 10px;
+  font-size: 0.9em;
+  color: #666;
 }
 
 .data-count {
@@ -542,17 +628,28 @@ h3 {
   border: 1px solid #ddd;
   border-radius: 4px;
   margin-bottom: 20px;
-  height: 200px;
+  height: 300px; /* 增加高度以更好地显示不定高项目 */
   overflow: hidden;
 }
 
 .list-item {
   padding: 0 15px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
   border-left: 4px solid #42b883;
   background: white;
   transition: background 0.2s;
+}
+
+.item-title {
+  font-weight: bold;
+}
+
+.item-content {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 4px;
 }
 
 .list-item:hover {

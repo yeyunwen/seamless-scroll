@@ -2,6 +2,8 @@ export interface ListItem {
   id: number;
   title: string;
   color: string;
+  heightMultiplier?: number;
+  content?: string;
 }
 
 export const listData: ListItem[] = [
