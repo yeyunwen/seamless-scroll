@@ -52,9 +52,6 @@ const isVirtualized = computed(() => {
   return state.value.isVirtualized;
 });
 
-// 获取虚拟滚动的起始索引
-const startIndex = computed(() => state.value.startIndex);
-
 // 根据虚拟滚动获取需要渲染的项目列表
 const virtualItems = computed<VirtualScrollItem<T>[]>(() => {
   return getVirtualItems(props.data);
@@ -107,7 +104,7 @@ const virtualCloneItems = computed<T[]>(() => {
 });
 
 // 为虚拟滚动优化，确保realList容器维持完整高度
-const getVirtualRealListStyle = computed<CSSProperties>(() => {
+const virtualRealListStyle = computed<CSSProperties>(() => {
   if (!state.value.isVirtualized) {
     return {};
   }
@@ -125,28 +122,6 @@ const getVirtualRealListStyle = computed<CSSProperties>(() => {
     height: "100%",
   };
 });
-
-// 手动测量当前所有项目
-const measureAllItems = () => {
-  if (!state.value.isVirtualized) return;
-
-  itemElements.value.forEach((el, index) => {
-    if (el && document.body.contains(el)) {
-      const size = isVertical.value ? el.offsetHeight : el.offsetWidth;
-
-      if (size > 0) {
-        // 确保尺寸不小于minItemSize
-        const minSize = props.minItemSize;
-        const constrainedSize = Math.max(size, minSize);
-
-        // 获取元素的类型
-        const type = el.dataset.itemType;
-        // 更新到 Core
-        methods.updateItemSizeList(index, constrainedSize, type);
-      }
-    }
-  });
-};
 
 // 计算虚拟滚动项的位置偏移
 const getVirtualItemStyle = (index: number): CSSProperties => {
@@ -181,7 +156,7 @@ const handleItemClick = (item: T, index: number) => {
 };
 
 // 拿到项目元素
-const itemRef = (el: any, item: VirtualScrollItem<T>, i: number) => {
+const itemRef = (el: any, item: VirtualScrollItem<T>) => {
   if (!el) return;
 
   const index = item._originalIndex;
@@ -208,7 +183,7 @@ const getItemKey = (item: T, index: number, prefix = "") => {
     return `${prefix}-${props.itemKey(item, index)}`;
   }
 
-  return `${prefix}-${item[props.itemKey] ?? index}`;
+  return `${prefix}-${(item as any)[props.itemKey] ?? index}`;
 };
 
 watch(
@@ -223,8 +198,6 @@ watch(
         methods.updateSize();
         // 重新设置 observer
         methods.resetObserver();
-        // 延迟测量所有项目
-        setTimeout(measureAllItems, 50);
       });
     }
   },
@@ -232,9 +205,7 @@ watch(
 
 // 当挂载或更新时测量所有项目
 onMounted(() => {
-  nextTick(() => {
-    measureAllItems();
-  });
+  nextTick(() => {});
 });
 
 // 清理观察者
@@ -277,7 +248,7 @@ defineExpose<SeamlessScrollRef>({
         class="seamless-scroll-real-list"
         :style="{
           ...styles.list,
-          ...getVirtualRealListStyle,
+          ...virtualRealListStyle,
         }"
       >
         <!-- 虚拟滚动时只渲染可见项目 -->
@@ -291,7 +262,7 @@ defineExpose<SeamlessScrollRef>({
               ...getVirtualItemStyle(item._originalIndex),
             }"
             @click="handleItemClick(item, item._originalIndex)"
-            :ref="(el) => itemRef(el, item, i)"
+            :ref="(el) => itemRef(el, item)"
             :data-index="item._originalIndex"
             :data-item-type="(item as any).type"
           >

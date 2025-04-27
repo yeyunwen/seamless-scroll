@@ -3,6 +3,7 @@ import {
   type ScrollOptions,
   type ScrollMethods,
   createSeamlessScroll,
+  ScrollState,
 } from "@seamless-scroll/core";
 import { computed, onBeforeUnmount, onMounted, ref, watchEffect, type Ref } from "vue";
 import { HooksProps } from "./types";
@@ -22,7 +23,7 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
   let scrollInstance: SeamlessScrollResult | null = null;
 
   // 滚动状态
-  const scrollState = ref({
+  const scrollState = ref<ScrollState>({
     isScrolling: false,
     isPaused: false,
     isHovering: false,
@@ -34,10 +35,10 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
     scrollDistance: 0,
     contentSize: 0,
     containerSize: 0,
-    itemSizeList: [] as number[],
+    itemSizeList: [],
     totalMeasuredItems: 0,
     averageSize: 0,
-    typeSizes: {} as Record<string, { total: number; count: number; average: number }>,
+    typeSizes: {},
   });
 
   // 将属性转换为核心库选项
@@ -120,7 +121,6 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
           minItemSize: hooksProps.value.minItemSize,
           dataTotal: hooksProps.value.dataTotal,
         };
-        console.log("updateOptions", newOptions);
         scrollInstance.methods.updateOptions(newOptions);
       }
     });
@@ -151,8 +151,9 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
     updateItemSizeList: (index: number, size: number, type?: string) =>
       scrollInstance?.methods.updateItemSizeList(index, size, type),
     predictItemSize: (index: number, type?: string) =>
-      scrollInstance?.methods.predictItemSize?.(index, type) || 0,
-    getVirtualCloneRange: () => scrollInstance?.methods.getVirtualCloneRange(),
+      scrollInstance?.methods.predictItemSize(index, type) ?? 0,
+    getVirtualCloneRange: () =>
+      scrollInstance?.methods.getVirtualCloneRange() ?? { startIndex: 0, endIndex: 0 },
   };
 
   return {

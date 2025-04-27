@@ -8,7 +8,11 @@ import {
 } from "@seamless-scroll/core";
 import { HooksProps } from "./types";
 
-export function useSeamlessScroll(props: HooksProps) {
+export type VirtualScrollItem<T = any> = T & {
+  _originalIndex: number;
+};
+
+export function useSeamlessScroll<T = any>(props: HooksProps) {
   // 引用DOM元素
   const containerRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -27,12 +31,24 @@ export function useSeamlessScroll(props: HooksProps) {
     minClones: 0,
     contentSize: 0,
     containerSize: 0,
+    startIndex: 0,
+    endIndex: 0,
+    isVirtualized: false,
+    itemSizeList: [],
+    averageSize: 0,
+    totalMeasuredItems: 0,
+    typeSizes: {},
   });
 
   // 只保留影响UI渲染的状态用于触发重新渲染
-  const [renderState, setRenderState] = useState({
+  const [renderState, setRenderState] = useState<Partial<ScrollState>>({
     isScrollNeeded: false,
+    isVirtualized: false,
+    contentSize: 0,
     minClones: 0,
+    startIndex: 0,
+    endIndex: 0,
+    itemSizeList: [],
   });
 
   // 将属性转换为核心库选项
@@ -45,6 +61,10 @@ export function useSeamlessScroll(props: HooksProps) {
       hoverPause: props.hoverPause ?? true,
       autoScroll: props.autoScroll ?? true,
       forceScrolling: props.forceScrolling ?? false,
+      dataTotal: props.dataTotal ?? 0,
+      itemSize: props.itemSize ?? undefined,
+      minItemSize: props.minItemSize ?? undefined,
+      virtualScrollBuffer: props.virtualScrollBuffer ?? 10,
     };
   }, [
     props.direction,
@@ -54,13 +74,15 @@ export function useSeamlessScroll(props: HooksProps) {
     props.hoverPause,
     props.autoScroll,
     props.forceScrolling,
+    props.dataTotal,
+    props.itemSize,
+    props.minItemSize,
+    props.virtualScrollBuffer,
   ]);
 
   // 初始化滚动 - 只依赖DOM引用，不依赖props
   const initScroll = useCallback(
     () => {
-      console.log("initScroll");
-
       if (!containerRef.current || !contentRef.current || !realListRef.current) {
         return;
       }
@@ -84,12 +106,20 @@ export function useSeamlessScroll(props: HooksProps) {
           // 仅当真正影响渲染的状态变化时才更新state
           if (
             state.isScrollNeeded !== prevState.isScrollNeeded ||
-            state.minClones !== prevState.minClones
+            state.minClones !== prevState.minClones ||
+            state.isVirtualized !== prevState.isVirtualized ||
+            state.contentSize !== prevState.contentSize ||
+            state.startIndex !== prevState.startIndex ||
+            state.endIndex !== prevState.endIndex
           ) {
             // 使用函数式更新避免闭包陷阱
             setRenderState({
               isScrollNeeded: state.isScrollNeeded,
               minClones: state.minClones,
+              isVirtualized: state.isVirtualized,
+              contentSize: state.contentSize,
+              startIndex: state.startIndex,
+              endIndex: state.endIndex,
             });
           }
         },
@@ -106,6 +136,26 @@ export function useSeamlessScroll(props: HooksProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
+
+  // 获取虚拟化项目的范围（用于渲染）
+  const getVirtualItems = <ItemType = T,>(items: ItemType[]): VirtualScrollItem<ItemType>[] => {
+    const { startIndex, endIndex } = stateRef.current;
+    if (items.length === 0) return [];
+
+    // 只返回可见范围内的项目，不要累积
+    const result: VirtualScrollItem<ItemType>[] = [];
+    const itemsToRender = Math.min(endIndex - startIndex + 1, items.length);
+
+    for (let i = 0; i < itemsToRender; i++) {
+      const realIndex = (startIndex + i) % items.length;
+      result.push({
+        ...items[realIndex],
+        _originalIndex: realIndex,
+      } as VirtualScrollItem<ItemType>);
+    }
+
+    return result;
+  };
 
   // 在 React 生命周期钩子中初始化和清理
   useEffect(() => {
@@ -128,33 +178,50 @@ export function useSeamlessScroll(props: HooksProps) {
   }, [getScrollOptions]);
 
   // 暴露方法
-  const methods = useMemo<ScrollMethods>(
-    () => ({
-      start: () => instanceRef.current?.methods.start(),
-      stop: () => instanceRef.current?.methods.stop(),
-      pause: () => instanceRef.current?.methods.pause(),
-      resume: () => instanceRef.current?.methods.resume(),
-      reset: () => instanceRef.current?.methods.reset(),
-      forceScroll: () => instanceRef.current?.methods.forceScroll(),
-      updateSize: () => instanceRef.current?.methods.updateSize(),
+  const methods = useMemo<ScrollMethods>(() => {
+    return {
+      start: () => instanceRef.current!.methods.start(),
+      stop: () => instanceRef.current!.methods.stop(),
+      pause: () => instanceRef.current!.methods.pause(),
+      resume: () => instanceRef.current!.methods.resume(),
+      reset: () => instanceRef.current!.methods.reset(),
+      forceScroll: () => instanceRef.current!.methods.forceScroll(),
+      updateSize: () => instanceRef.current!.methods.updateSize(),
       updateOptions: (newOptions: Partial<ScrollOptions>) =>
-        instanceRef.current?.methods.updateOptions(newOptions),
+        instanceRef.current!.methods.updateOptions(newOptions),
       setObserver: (container, realList) =>
-        instanceRef.current?.methods.setObserver(container, realList),
-      clearObserver: () => instanceRef.current?.methods.clearObserver(),
-      resetObserver: () => instanceRef.current?.methods.resetObserver(),
-    }),
-    [],
-  );
+        instanceRef.current!.methods.setObserver(container, realList),
+      clearObserver: () => instanceRef.current!.methods.clearObserver(),
+      resetObserver: () => instanceRef.current!.methods.resetObserver(),
+      updateItemSizeList: (index: number, size: number, type?: string) =>
+        instanceRef.current!.methods.updateItemSizeList(index, size, type),
+      predictItemSize: (index: number, type?: string) =>
+        instanceRef.current!.methods.predictItemSize(index, type) ?? 0,
+      getVirtualCloneRange: () => {
+        return instanceRef.current!.methods.getVirtualCloneRange();
+      },
+    };
+  }, [instanceRef]);
 
   // 合并渲染状态和内部状态提供完整状态接口
   const scrollState = useMemo<ScrollState>(
     () => ({
       ...stateRef.current,
-      isScrollNeeded: renderState.isScrollNeeded,
-      minClones: renderState.minClones,
+      isScrollNeeded: renderState.isScrollNeeded!,
+      minClones: renderState.minClones!,
+      isVirtualized: renderState.isVirtualized!,
+      contentSize: renderState.contentSize!,
+      startIndex: renderState.startIndex!,
+      endIndex: renderState.endIndex!,
     }),
-    [renderState.isScrollNeeded, renderState.minClones],
+    [
+      renderState.isScrollNeeded,
+      renderState.minClones,
+      renderState.isVirtualized,
+      renderState.contentSize,
+      renderState.startIndex,
+      renderState.endIndex,
+    ],
   );
 
   return {
@@ -163,5 +230,6 @@ export function useSeamlessScroll(props: HooksProps) {
     realListRef,
     state: scrollState,
     methods,
+    getVirtualItems,
   };
 }

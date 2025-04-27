@@ -5,7 +5,7 @@ import {
   ScrollState,
   SeamlessScrollResult,
 } from "./types";
-import { isNumber, createReadOnlyState, useStateWithCallback } from "./utils";
+import { isNumber, createReadOnlyState, useStateWithCallback, throttle } from "./utils";
 
 // 默认配置
 export const DEFAULT_OPTIONS: Required<
@@ -155,7 +155,6 @@ export const createSeamlessScroll = (
     // 使用获取器函数获取最新引用
     const currentContainer = domRefs.getContainer();
     const currentRealList = domRefs.getRealList();
-
     if (!currentContainer || !currentRealList) return;
 
     const containerSize = getBaseContainerSize();
@@ -297,7 +296,6 @@ export const createSeamlessScroll = (
   const updateOptions = (newOptions: Partial<ScrollOptions>) => {
     // 合并新选项到当前配置
     Object.assign(config, newOptions);
-
     // 更新尺寸和滚动需求
     updateSize();
 
@@ -319,14 +317,17 @@ export const createSeamlessScroll = (
     // 使用二分查找找到第一个可见项目
     let startIndex = 0;
     let endIndex = 0;
+    let minVisibleCount = 1;
 
     // find startIndex
     if (config.itemSize) {
+      minVisibleCount = Math.ceil(containerSize / config.itemSize);
       // 固定高度 - 简单除法
       startIndex = Math.floor(scrollPosition / config.itemSize);
       // 确保startIndex不会超出范围
-      startIndex = startIndex % totalItems;
+      startIndex = Math.max(0, Math.min(totalItems - minVisibleCount, startIndex));
     } else {
+      minVisibleCount = Math.ceil(containerSize / config.minItemSize!);
       // 变量高度 - 二分查找或线性扫描
       if (state.totalMeasuredItems > totalItems * 0.7) {
         // 足够的测量数据，用二分查找
@@ -351,7 +352,7 @@ export const createSeamlessScroll = (
 
         startIndex = Math.max(0, high);
         // 确保不超出范围
-        startIndex = startIndex % totalItems;
+        startIndex = Math.max(0, Math.min(totalItems - minVisibleCount, startIndex));
       } else {
         // 测量数据不足，线性扫描
         let offset = 0;
@@ -371,6 +372,7 @@ export const createSeamlessScroll = (
         if (!foundIndex) {
           startIndex = 0;
         }
+        startIndex = Math.max(0, Math.min(totalItems - minVisibleCount, startIndex));
       }
     }
 
@@ -416,7 +418,6 @@ export const createSeamlessScroll = (
   const applyScrollPosition = () => {
     const currentContent = domRefs.getContent();
     if (!currentContent) return;
-
     // 通过 CSS transform 实现平滑滚动
     currentContent.style.transform = `translate${
       isVertical() ? "Y" : "X"
@@ -485,7 +486,6 @@ export const createSeamlessScroll = (
 
       // 计算当前滚动位置
       const newScrollDistance = state.scrollDistance + step;
-
       // 检查是否需要重置位置
       if (newScrollDistance >= state.contentSize) {
         // 无缝重置：不直接跳回0，而是减去一个内容高度/宽度，这样看起来是连续的
@@ -632,9 +632,11 @@ export const createSeamlessScroll = (
     clearObserver();
 
     // 创建新的观察者
-    observer = new ResizeObserver(() => {
-      updateSize();
-    });
+    observer = new ResizeObserver(
+      throttle(() => {
+        updateSize();
+      }, 100),
+    );
 
     // 观察容器和内容区
     observer.observe(container);
