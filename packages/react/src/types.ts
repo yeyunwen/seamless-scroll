@@ -14,7 +14,6 @@ export type ReactSeamlessScrollProps<T = any> = SeamlessScrollProps<T, CSSProper
   children?: ChildrenRenderFunction<T> | ReactElement;
   emptyRender?: ReactNode;
   onItemClick?: (item: T, index: number) => void;
-  itemKey?: string | ((item: T, index: number) => string | number);
 };
 
 // 扩展 SeamlessScrollStyles 以支持 React 特定的样式类型

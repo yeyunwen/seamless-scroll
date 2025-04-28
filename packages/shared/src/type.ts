@@ -13,6 +13,8 @@ export interface SeamlessScrollProps<T = any, S = Record<string, any>>
   customClass?: string;
   /* 自定义样式 */
   style?: S;
+  /* item key field or function */
+  itemKey?: string | ((item: T, index: number) => string | number);
 }
 
 export type VirtualScrollItem<T = any> = T & {

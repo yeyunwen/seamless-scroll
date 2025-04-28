@@ -20,7 +20,7 @@ export interface ScrollOptions {
   autoScroll?: boolean;
   /* 是否强制滚动（即使内容未超出容器） */
   forceScrolling?: boolean;
-  /* 虚拟滚动项目缓冲区大小（前后各多渲染几个项目） */
+  /* 虚拟滚动项目缓冲区大小（前后各多渲染几个项目）default 5 */
   virtualScrollBuffer?: number;
   /* 估计的每个项目高度/宽度（像素）- 用于初始计算
    * 注意：itemSize和minItemSize至少需要设置一个，否则将无法正确计算滚动位置
