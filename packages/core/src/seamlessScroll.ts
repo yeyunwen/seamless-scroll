@@ -41,11 +41,6 @@ export const createSeamlessScroll = (
     getRealList: () => getRealList(),
   };
 
-  // 参数验证：确保itemSize和minItemSize至少有一个存在
-  if (!isNumber(options.itemSize) && !isNumber(options.minItemSize)) {
-    throw new Error("错误：itemSize和minItemSize不能同时为空，将使用默认值50作为minItemSize");
-  }
-
   // 合并默认配置和用户配置
   const config: Required<Omit<ScrollOptions, "dataTotal" | "itemSize" | "minItemSize">> & {
     dataTotal: number;
@@ -165,6 +160,7 @@ export const createSeamlessScroll = (
     if (realListChildrenLength > 0 && contentSize > containerSize) {
       if (!state.isVirtualized) {
         // 启用虚拟滚动
+
         setState({ isVirtualized: true });
       }
     }
@@ -176,6 +172,10 @@ export const createSeamlessScroll = (
 
     // 如果启用了虚拟滚动，更新可见项目
     if (state.isVirtualized) {
+      // 参数验证：确保itemSize和minItemSize至少有一个存在
+      if (!isNumber(options.itemSize) && !isNumber(options.minItemSize)) {
+        throw new Error("错误：itemSize和minItemSize不能同时为空，将使用默认值50作为minItemSize");
+      }
       updateVisibleItems();
     }
     updateMinClones();
