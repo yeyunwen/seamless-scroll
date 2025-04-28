@@ -43,8 +43,7 @@ export const createSeamlessScroll = (
 
   // 参数验证：确保itemSize和minItemSize至少有一个存在
   if (!isNumber(options.itemSize) && !isNumber(options.minItemSize)) {
-    console.error("错误：itemSize和minItemSize不能同时为空，将使用默认值50作为minItemSize");
-    process.exit(1);
+    throw new Error("错误：itemSize和minItemSize不能同时为空，将使用默认值50作为minItemSize");
   }
 
   // 合并默认配置和用户配置
