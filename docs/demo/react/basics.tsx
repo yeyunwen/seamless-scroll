@@ -2,13 +2,13 @@ import { useState } from "react";
 import { SeamlessScroll } from "@seamless-scroll/react";
 
 function App() {
-  const [items] = useState([
+  const [items] = useState<{ id: number; text: string }[]>([
     { id: 1, text: "公告1" },
     { id: 2, text: "公告2" },
     { id: 3, text: "公告3" },
   ]);
 
-  const handleItemClick = (item: any) => {
+  const handleItemClick = (item: { id: number; text: string }) => {
     console.log("点击了项目:", item);
   };
 

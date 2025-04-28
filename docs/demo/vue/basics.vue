@@ -2,13 +2,13 @@
 import { ref } from "vue";
 import { SeamlessScroll } from "@seamless-scroll/vue";
 
-const items = ref([
+const items = ref<{ id: number; text: string }[]>([
   { id: 1, text: "公告1" },
   { id: 2, text: "公告2" },
   { id: 3, text: "公告3" },
 ]);
 
-const handleItemClick = (item: any) => {
+const handleItemClick = (item: { id: number; text: string }) => {
   console.log("点击了项目:", item);
 };
 </script>
