@@ -9,13 +9,14 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { useSeamlessScroll, VirtualScrollItem } from "./useSeamlessScroll";
-import type { SeamlessScrollRef } from "@seamless-scroll/shared";
 import { DEFAULT_OPTIONS } from "@seamless-scroll/core";
+import type { SeamlessScrollRef, VirtualScrollItem } from "@seamless-scroll/shared";
+import { useSeamlessScroll } from "./useSeamlessScroll";
 import {
   ChildrenRenderFunction,
   ReactSeamlessScrollProps,
   ReactSeamlessScrollStyles,
+  RenderProps,
 } from "./types";
 
 // 组件默认属性
@@ -28,7 +29,10 @@ const defaultProps = {
   dataTotal: 0,
 };
 
-const SeamlessScroll = forwardRef<SeamlessScrollRef, ReactSeamlessScrollProps>((props, ref) => {
+function InnerSeamlessScroll<T>(
+  props: ReactSeamlessScrollProps<T>,
+  ref: React.Ref<SeamlessScrollRef>,
+) {
   const isInit = useRef(false);
 
   // 合并默认值和传入属性
@@ -51,7 +55,7 @@ const SeamlessScroll = forwardRef<SeamlessScrollRef, ReactSeamlessScrollProps>((
 
   // 使用滚动 hook
   const { containerRef, contentRef, realListRef, state, methods, getVirtualItems } =
-    useSeamlessScroll(mergedProps);
+    useSeamlessScroll<T>(mergedProps);
 
   const itemElements = useRef<Map<number, HTMLElement>>(new Map());
 
@@ -158,7 +162,7 @@ const SeamlessScroll = forwardRef<SeamlessScrollRef, ReactSeamlessScrollProps>((
 
   // 为项目生成唯一键
   const getItemKey = useCallback(
-    (item: any, index: number, prefix = "") => {
+    (item: T, index: number, prefix = "") => {
       if (!props.itemKey) return `${prefix}-${index}`;
 
       if (typeof props.itemKey === "function") {
@@ -172,7 +176,7 @@ const SeamlessScroll = forwardRef<SeamlessScrollRef, ReactSeamlessScrollProps>((
 
   // 拿到项目元素
   const itemRef = useCallback(
-    (el: any, item: VirtualScrollItem<any>) => {
+    (el: any, item: VirtualScrollItem<T>) => {
       if (!el) return;
 
       const index = item._originalIndex;
@@ -195,14 +199,14 @@ const SeamlessScroll = forwardRef<SeamlessScrollRef, ReactSeamlessScrollProps>((
 
   // 渲染内容
   const renderItem = useCallback(
-    (item: any, index: number) => {
+    (item: T, index: number) => {
       if (typeof children === "function") {
-        return (children as ChildrenRenderFunction)({ item, index });
+        return (children as ChildrenRenderFunction<T>)({ item, index });
       } else if (isValidElement(children)) {
         return cloneElement(children, {
           item,
           index,
-        } as any);
+        } as RenderProps<T>);
       } else {
         return JSON.stringify(item);
       }
@@ -360,6 +364,10 @@ const SeamlessScroll = forwardRef<SeamlessScrollRef, ReactSeamlessScrollProps>((
       )}
     </div>
   );
-});
+}
+
+const SeamlessScroll = forwardRef(InnerSeamlessScroll) as <T>(
+  props: ReactSeamlessScrollProps<T> & { ref?: React.Ref<SeamlessScrollRef> },
+) => React.ReactElement;
 
 export default SeamlessScroll;

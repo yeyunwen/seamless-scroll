@@ -15,6 +15,10 @@ export interface SeamlessScrollProps<T = any, S = Record<string, any>>
   style?: S;
 }
 
+export type VirtualScrollItem<T = any> = T & {
+  _originalIndex: number;
+};
+
 export interface SeamlessScrollStyles<T = Record<string, any>> {
   container: T;
   content: T;

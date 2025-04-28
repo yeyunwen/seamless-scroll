@@ -6,11 +6,8 @@ import {
   ScrollState,
   ScrollMethods,
 } from "@seamless-scroll/core";
+import { VirtualScrollItem } from "@seamless-scroll/shared";
 import { HooksProps } from "./types";
-
-export type VirtualScrollItem<T = any> = T & {
-  _originalIndex: number;
-};
 
 export function useSeamlessScroll<T = any>(props: HooksProps) {
   // 引用DOM元素

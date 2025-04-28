@@ -468,9 +468,9 @@ const App = () => {
             itemSize={computedItemSize}
             minItemSize={computedMinItemSize}
             onItemClick={handleItemClick}
-            itemKey={(item: ListItem) => item.id}
+            itemKey={(item) => item.id}
           >
-            {({ item, index }: { item: ListItem; index: number }) => (
+            {({ item, index }) => (
               <div className="list-item" style={getDynamicItemStyle(item)}>
                 <div className="item-title">
                   {item.title} ({index + 1})

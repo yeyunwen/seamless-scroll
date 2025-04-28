@@ -1,3 +1,4 @@
+import { computed, onBeforeUnmount, onMounted, ref, watchEffect, type Ref } from "vue";
 import {
   type SeamlessScrollResult,
   type ScrollOptions,
@@ -5,13 +6,8 @@ import {
   createSeamlessScroll,
   ScrollState,
 } from "@seamless-scroll/core";
-import { computed, onBeforeUnmount, onMounted, ref, watchEffect, type Ref } from "vue";
+import { VirtualScrollItem } from "@seamless-scroll/shared";
 import { HooksProps } from "./types";
-
-// 定义虚拟滚动项的通用接口，支持泛型
-export type VirtualScrollItem<T = any> = T & {
-  _originalIndex: number;
-};
 
 export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
   // 引用DOM元素

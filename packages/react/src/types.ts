@@ -2,16 +2,16 @@ import { SeamlessScrollProps, SeamlessScrollStyles } from "@seamless-scroll/shar
 import { ScrollOptions } from "@seamless-scroll/core";
 import { CSSProperties, ReactElement, ReactNode } from "react";
 
-export interface RenderProps {
-  item: any;
+export interface RenderProps<T = any> {
+  item: T;
   index: number;
 }
 
-export type ChildrenRenderFunction = (props: RenderProps) => ReactNode;
+export type ChildrenRenderFunction<T = any> = (props: RenderProps<T>) => ReactNode;
 
 // 扩展 SeamlessScrollProps 以支持 React 特定的样式类型
 export type ReactSeamlessScrollProps<T = any> = SeamlessScrollProps<T, CSSProperties> & {
-  children?: ChildrenRenderFunction | ReactElement;
+  children?: ChildrenRenderFunction<T> | ReactElement;
   emptyRender?: ReactNode;
   onItemClick?: (item: T, index: number) => void;
   itemKey?: string | ((item: T, index: number) => string | number);

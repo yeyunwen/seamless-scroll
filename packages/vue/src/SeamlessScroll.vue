@@ -1,8 +1,8 @@
 <script setup lang="ts" generic="T">
-import { DEFAULT_OPTIONS } from "@seamless-scroll/core";
-import type { SeamlessScrollRef } from "@seamless-scroll/shared";
-import { useSeamlessScroll, VirtualScrollItem } from "./useSeamlessScroll";
 import { computed, watch, nextTick, CSSProperties, ref, onMounted, onUnmounted } from "vue";
+import { DEFAULT_OPTIONS } from "@seamless-scroll/core";
+import type { SeamlessScrollRef, VirtualScrollItem } from "@seamless-scroll/shared";
+import { useSeamlessScroll } from "./useSeamlessScroll";
 import { HooksProps, VueSeamlessScrollProps, VueSeamlessScrollStyles } from "./types";
 
 // 基本 props 定义
