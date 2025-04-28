@@ -35,7 +35,7 @@ describe("ReadOnly State Tests", () => {
       container,
       content,
       realList,
-      { autoScroll: false }, // 关闭自动滚动以便测试
+      { autoScroll: false, dataTotal: 100, itemSize: 100 }, // 关闭自动滚动以便测试
     );
 
     // 直接设置isScrollNeeded为true以便滚动可以开始
