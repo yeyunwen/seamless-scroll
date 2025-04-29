@@ -1,5 +1,24 @@
 # @seamless-scroll/vue
 
+## 0.2.0
+
+### Minor Changes
+
+- ## feat
+
+  1. 支持虚拟滚动。当readList的大小超过container容器是会自动开启虚拟滚动。
+
+- 95f77df: ## feat
+
+  1. 添加resetObserver，重置并重新观察 DOM
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [95f77df]
+  - @seamless-scroll/core@0.2.0
+  - @seamless-scroll/shared@0.2.0
+
 ## 0.1.2
 
 ### Patch Changes
