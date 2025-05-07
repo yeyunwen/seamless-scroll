@@ -71,9 +71,12 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
       () => contentRef.value,
       () => realListRef.value,
       scrollOptions.value,
-      (state) => {
-        scrollState.value = state;
-      },
+      () => [
+        (state: ScrollState) => {
+          scrollState.value = state;
+        },
+        ["isScrollNeeded", "isVirtualized", "minClones", "startIndex", "endIndex", "contentSize"],
+      ],
     );
   };
 

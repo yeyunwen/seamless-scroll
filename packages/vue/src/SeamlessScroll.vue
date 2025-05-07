@@ -176,14 +176,17 @@ const itemRef = (el: any, item: VirtualScrollItem<T>) => {
 };
 
 // 为项目生成唯一键
-const getItemKey = (item: T, index: number, prefix = "") => {
-  if (!props.itemKey) return `${prefix}-${index}`;
+const getItemKey = (item: T, index: number, prefix = "", isVirtualized = false) => {
+  const _index = isVirtualized ? (item as any)._originalIndex : index;
 
+  if (!props.itemKey) {
+    return `${prefix}-${_index}`;
+  }
   if (typeof props.itemKey === "function") {
-    return `${prefix}-${props.itemKey(item, index)}`;
+    return `${prefix}-${props.itemKey(item, _index)}`;
   }
 
-  return `${prefix}-${(item as any)[props.itemKey] ?? index}`;
+  return `${prefix}-${(item as any)[props.itemKey] ?? _index}`;
 };
 
 watch(
@@ -256,7 +259,7 @@ defineExpose<SeamlessScrollRef>({
           <div
             v-for="(item, i) in virtualItems"
             class="seamless-scroll-item"
-            :key="getItemKey(item, i, 'real')"
+            :key="getItemKey(item, i, 'real', true)"
             :style="{
               ...styles.item,
               ...getVirtualItemStyle(item._originalIndex),

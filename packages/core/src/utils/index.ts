@@ -33,21 +33,52 @@ export const createReadOnlyState = <T extends ScrollState>(state: T): Readonly<T
 // 创建带回调的只读状态
 export const useStateWithCallback = (
   initialState: ScrollState,
-  onStateChange?: (state: ScrollState) => void,
+  onStateChange?: () => [(state: ScrollState) => void, (keyof ScrollState)[]],
 ) => {
   const state = { ...initialState };
+  // 用于记录回调和依赖项
+  let callbackFn: ((state: ScrollState) => void) | undefined;
+  let watchDeps: (keyof ScrollState)[] = [];
+  // 保存上一次依赖项的值
+  const prevDepsValues: any = {};
 
-  const throttledOnStateChange = onStateChange
-    ? throttle((newState: ScrollState) => {
-        // 返回一个新对象，避免vue watch无法监听
-        onStateChange({ ...newState });
-      }, 16) // 约60fps的刷新率
-    : undefined;
+  // 设置回调和依赖项
+  if (onStateChange) {
+    const [callback, deps] = onStateChange();
+    callbackFn = callback;
+    watchDeps = deps;
+    // 初始化依赖项的初始值
+    deps.forEach((key) => {
+      if (key in initialState) {
+        prevDepsValues[key] = initialState[key as keyof ScrollState];
+      }
+    });
+  }
 
   const dispatch = (newState: Partial<ScrollState>) => {
+    // 检查依赖项是否有变化
+    let shouldRunCallback = false;
+
+    if (watchDeps.length > 0) {
+      for (const key of watchDeps) {
+        if (
+          key in newState &&
+          newState[key as keyof Partial<ScrollState>] !== prevDepsValues[key]
+        ) {
+          shouldRunCallback = true;
+          // 更新依赖值
+          prevDepsValues[key] = newState[key as keyof Partial<ScrollState>];
+        }
+      }
+    } else {
+      // 如果没有指定依赖项，则每次都运行
+      shouldRunCallback = true;
+    }
+
     Object.assign(state, newState);
-    if (throttledOnStateChange) {
-      throttledOnStateChange({ ...state });
+    // 直接调用回调，不使用节流
+    if (callbackFn && shouldRunCallback) {
+      callbackFn({ ...state });
     }
   };
 

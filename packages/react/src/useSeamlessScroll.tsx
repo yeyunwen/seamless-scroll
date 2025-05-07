@@ -18,8 +18,8 @@ export function useSeamlessScroll<T = any>(props: HooksProps) {
   // 实例引用
   const instanceRef = useRef<SeamlessScrollResult | null>(null);
 
-  // 使用ref保存完整状态，避免不必要的渲染
-  const stateRef = useRef<ScrollState>({
+  // 只保留影响UI渲染的状态用于触发重新渲染
+  const [scrollState, setScrollState] = useState<ScrollState>({
     isScrolling: false,
     isPaused: false,
     isHovering: false,
@@ -35,17 +35,6 @@ export function useSeamlessScroll<T = any>(props: HooksProps) {
     averageSize: 0,
     totalMeasuredItems: 0,
     typeSizes: {},
-  });
-
-  // 只保留影响UI渲染的状态用于触发重新渲染
-  const [renderState, setRenderState] = useState<Partial<ScrollState>>({
-    isScrollNeeded: false,
-    isVirtualized: false,
-    contentSize: 0,
-    minClones: 0,
-    startIndex: 0,
-    endIndex: 0,
-    itemSizeList: [],
   });
 
   // 将属性转换为核心库选项
@@ -95,31 +84,12 @@ export function useSeamlessScroll<T = any>(props: HooksProps) {
         () => contentRef.current,
         () => realListRef.current,
         getScrollOptions(),
-        (state) => {
-          // 更新内部状态引用，但不直接赋值整个对象
-          const prevState = { ...stateRef.current };
-          Object.assign(stateRef.current, state);
-
-          // 仅当真正影响渲染的状态变化时才更新state
-          if (
-            state.isScrollNeeded !== prevState.isScrollNeeded ||
-            state.minClones !== prevState.minClones ||
-            state.isVirtualized !== prevState.isVirtualized ||
-            state.contentSize !== prevState.contentSize ||
-            state.startIndex !== prevState.startIndex ||
-            state.endIndex !== prevState.endIndex
-          ) {
-            // 使用函数式更新避免闭包陷阱
-            setRenderState({
-              isScrollNeeded: state.isScrollNeeded,
-              minClones: state.minClones,
-              isVirtualized: state.isVirtualized,
-              contentSize: state.contentSize,
-              startIndex: state.startIndex,
-              endIndex: state.endIndex,
-            });
-          }
-        },
+        () => [
+          (state) => {
+            setScrollState(state);
+          },
+          ["isScrollNeeded", "isVirtualized", "contentSize", "minClones", "startIndex", "endIndex"],
+        ],
       );
 
       // 返回清理函数
@@ -136,7 +106,7 @@ export function useSeamlessScroll<T = any>(props: HooksProps) {
 
   // 获取虚拟化项目的范围（用于渲染）
   const getVirtualItems = <ItemType = T,>(items: ItemType[]): VirtualScrollItem<ItemType>[] => {
-    const { startIndex, endIndex } = stateRef.current;
+    const { startIndex, endIndex } = scrollState;
     if (items.length === 0) return [];
 
     // 只返回可见范围内的项目，不要累积
@@ -201,25 +171,6 @@ export function useSeamlessScroll<T = any>(props: HooksProps) {
   }, [instanceRef]);
 
   // 合并渲染状态和内部状态提供完整状态接口
-  const scrollState = useMemo<ScrollState>(
-    () => ({
-      ...stateRef.current,
-      isScrollNeeded: renderState.isScrollNeeded!,
-      minClones: renderState.minClones!,
-      isVirtualized: renderState.isVirtualized!,
-      contentSize: renderState.contentSize!,
-      startIndex: renderState.startIndex!,
-      endIndex: renderState.endIndex!,
-    }),
-    [
-      renderState.isScrollNeeded,
-      renderState.minClones,
-      renderState.isVirtualized,
-      renderState.contentSize,
-      renderState.startIndex,
-      renderState.endIndex,
-    ],
-  );
 
   return {
     containerRef,

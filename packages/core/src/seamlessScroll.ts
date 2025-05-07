@@ -26,7 +26,7 @@ export const createSeamlessScroll = (
   contentEl: ElementOrGetter,
   realListEl: ElementOrGetter,
   options: ScrollOptions,
-  onStateChange?: (state: ScrollState) => void,
+  onStateChange?: () => [(state: ScrollState) => void, (keyof ScrollState)[]],
 ): SeamlessScrollResult => {
   // 创建获取 DOM 元素的函数
   const getContainer = typeof containerEl === "function" ? containerEl : () => containerEl;

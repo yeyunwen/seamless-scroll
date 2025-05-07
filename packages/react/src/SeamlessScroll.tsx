@@ -162,14 +162,16 @@ function InnerSeamlessScroll<T>(
 
   // 为项目生成唯一键
   const getItemKey = useCallback(
-    (item: T, index: number, prefix = "") => {
-      if (!props.itemKey) return `${prefix}-${index}`;
+    (item: T, index: number, prefix = "", isVirtualized = false) => {
+      const _itemKey = isVirtualized ? (item as any)._originalIndex : index;
+
+      if (!props.itemKey) return `${prefix}-${_itemKey}`;
 
       if (typeof props.itemKey === "function") {
         return `${prefix}-${props.itemKey(item, index)}`;
       }
 
-      return `${prefix}-${(item as any)[props.itemKey] ?? index}`;
+      return `${prefix}-${(item as any)[props.itemKey] ?? _itemKey}`;
     },
     [props],
   );
@@ -220,7 +222,7 @@ function InnerSeamlessScroll<T>(
         if (state.isVirtualized) {
           return virtualItems.map((item, index) => (
             <div
-              key={getItemKey(item, index, `real-${index}`)}
+              key={getItemKey(item, index, `real-${index}`, true)}
               className="smooth-scroll-item"
               style={{ ...styles.item, ...getVirtualItemStyle(item._originalIndex) }}
               ref={(el) => itemRef(el, item)}
