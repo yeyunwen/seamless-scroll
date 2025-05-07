@@ -4,13 +4,9 @@
 
 ### Minor Changes
 
-- ## feat
+- feat 支持虚拟滚动。当readList的大小超过container容器是会自动开启虚拟滚动。
 
-  1. 支持虚拟滚动。当readList的大小超过container容器是会自动开启虚拟滚动。
-
-- 95f77df: ## feat
-
-  1. 添加resetObserver，重置并重新观察 DOM
+- 95f77df: feat 添加resetObserver，重置并重新观察 DOM
 
 ### Patch Changes
 
