@@ -1,5 +1,11 @@
 # @seamless-scroll/core
 
+## 0.2.1
+
+### Patch Changes
+
+- d684678: fix: perfect package.json
+
 ## 0.2.0
 
 ### Minor Changes

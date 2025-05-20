@@ -1,5 +1,14 @@
 # @seamless-scroll/react
 
+## 0.2.1
+
+### Patch Changes
+
+- d684678: fix: perfect package.json
+- Updated dependencies [d684678]
+  - @seamless-scroll/core@0.2.1
+  - @seamless-scroll/shared@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
