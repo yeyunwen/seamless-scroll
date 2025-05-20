@@ -24,6 +24,14 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeyunwen/seamless-scroll.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/yeyunwen/seamless-scroll/issues"
+  },
   "publishConfig": {
     "access": "public"
   },

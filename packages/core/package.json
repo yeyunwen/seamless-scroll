@@ -26,6 +26,14 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeyunwen/seamless-scroll.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/yeyunwen/seamless-scroll/issues"
+  },
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
