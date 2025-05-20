@@ -1,0 +1,37 @@
+name: "ci"
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "!**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  continuous-release:
+    if: github.repository == 'yeyunwen/seamless-scroll'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - name: Release
+        run: pnpx pkg-pr-new publish --compact --pnpm './packages/*'
