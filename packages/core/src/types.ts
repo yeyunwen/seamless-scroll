@@ -16,6 +16,8 @@ export interface ScrollOptions {
   pauseTime?: number;
   /* 是否在鼠标悬停时暂停 */
   hoverPause?: boolean;
+  /* 鼠标悬停暂停时是否允许滚轮手动滚动 */
+  wheelScroll?: boolean;
   /* 是否自动开始滚动 */
   autoScroll?: boolean;
   /* 是否强制滚动（即使内容未超出容器） */
