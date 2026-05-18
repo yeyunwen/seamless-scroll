@@ -13,5 +13,8 @@
   "packageManager": "pnpm@10.6.5",
   "dependencies": {
     "@seamless-scroll/core": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "catalog:"
   }
 }

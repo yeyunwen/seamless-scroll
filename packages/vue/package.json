@@ -44,7 +44,10 @@
     "@seamless-scroll/shared": "workspace:*"
   },
   "devDependencies": {
-    "vue": "^3.5.13"
+    "@vitejs/plugin-vue": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vue": "catalog:"
   },
   "peerDependencies": {
     "vue": "^3.5.13"

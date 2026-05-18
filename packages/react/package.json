@@ -44,12 +44,13 @@
     "@seamless-scroll/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/react": "^19.0.12",
-    "@types/react-dom": "^19.0.4",
-    "@vitejs/plugin-react": "^4.3.4",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "vite-plugin-dts": "^4.5.3"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:"
   },
   "peerDependencies": {
     "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
