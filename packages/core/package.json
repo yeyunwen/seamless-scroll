@@ -40,7 +40,7 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "happy-dom": "^17.4.4",
-    "tsup": "^8.4.0"
+    "happy-dom": "catalog:",
+    "tsup": "catalog:"
   }
 }

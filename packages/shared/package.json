@@ -36,6 +36,6 @@
     "@seamless-scroll/core": "workspace:*"
   },
   "devDependencies": {
-    "tsup": "^8.4.0"
+    "tsup": "catalog:"
   }
 }
