@@ -1,5 +1,19 @@
 # @seamless-scroll/react
 
+## 0.3.0
+
+### Minor Changes
+
+- 38b720a: 新增 `reverse` 配置，支持反向滚动。
+- 88dceae: 新增 `wheelScroll` 配置，支持鼠标悬停暂停时通过滚轮手动滚动。
+
+### Patch Changes
+
+- Updated dependencies [38b720a]
+- Updated dependencies [88dceae]
+  - @seamless-scroll/core@0.3.0
+  - @seamless-scroll/shared@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
