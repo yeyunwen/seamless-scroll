@@ -175,6 +175,7 @@ export default App;
 | `duration`            | `number`                                                   | `500`        | 每次滚动动画的持续时间（毫秒）                         |
 | `pauseTime`           | `number`                                                   | `2000`       | 每次滚动后的暂停时间（毫秒）                           |
 | `hoverPause`          | `boolean`                                                  | `true`       | 是否在鼠标悬停时暂停                                   |
+| `wheelScroll`         | `boolean`                                                  | `true`       | 鼠标悬停暂停时是否允许滚轮手动滚动                     |
 | `autoScroll`          | `boolean`                                                  | `true`       | 是否自动开始滚动                                       |
 | `forceScrolling`      | `boolean`                                                  | `false`      | 是否强制滚动（即使内容未超出容器）                     |
 | `containerHeight`     | `string \| number`                                         | `'100%'`     | 容器高度                                               |
@@ -261,6 +262,7 @@ function useSeamlessScroll<T>(props: {
   duration?: number;
   pauseTime?: number;
   hoverPause?: boolean;
+  wheelScroll?: boolean;
   autoScroll?: boolean;
   forceScrolling?: boolean;
   itemSize?: number;

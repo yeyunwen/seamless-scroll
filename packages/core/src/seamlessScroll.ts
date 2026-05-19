@@ -16,6 +16,7 @@ export const DEFAULT_OPTIONS: Required<
   duration: 500,
   pauseTime: 2000,
   hoverPause: true,
+  wheelScroll: true,
   autoScroll: true,
   forceScrolling: true,
   virtualScrollBuffer: 5, // 虚拟滚动缓冲区大小，防止滚动时出现空白
@@ -413,6 +414,30 @@ export const createSeamlessScroll = (
     });
   };
 
+  const normalizeScrollDistance = (distance: number) => {
+    if (state.contentSize <= 0) return 0;
+    return ((distance % state.contentSize) + state.contentSize) % state.contentSize;
+  };
+
+  const setScrollDistance = (distance: number) => {
+    const normalizedOffset = normalizeScrollDistance(distance);
+
+    if (state.isVirtualized && config.dataTotal) {
+      const { startIndex: newStartIndex } = calculateVisibleRange(
+        normalizedOffset,
+        config.dataTotal,
+      );
+
+      setState({
+        scrollDistance: normalizedOffset,
+        startIndex: newStartIndex,
+      });
+      return;
+    }
+
+    setState({ scrollDistance: normalizedOffset });
+  };
+
   // 应用滚动位置
   const applyScrollPosition = () => {
     const currentContent = domRefs.getContent();
@@ -488,28 +513,7 @@ export const createSeamlessScroll = (
       // 检查是否需要重置位置
       if (newScrollDistance >= state.contentSize) {
         // 无缝重置：不直接跳回0，而是减去一个内容高度/宽度，这样看起来是连续的
-        // 计算规范化的偏移量
-        const normalizedOffset = newScrollDistance % state.contentSize;
-
-        // 仅在启用虚拟滚动时才重新计算startIndex
-        if (state.isVirtualized && config.dataTotal) {
-          // 使用当前函数计算新的索引，而不是简单地设为0
-          const { startIndex: newStartIndex } = calculateVisibleRange(
-            normalizedOffset,
-            config.dataTotal,
-          );
-
-          // 更新状态，包括规范化的滚动距离和计算出的索引
-          setState({
-            scrollDistance: normalizedOffset,
-            startIndex: newStartIndex,
-          });
-        } else {
-          // 非虚拟滚动模式，只更新滚动距离
-          setState({
-            scrollDistance: normalizedOffset,
-          });
-        }
+        setScrollDistance(newScrollDistance);
       } else {
         setState({ scrollDistance: newScrollDistance });
       }
@@ -619,6 +623,20 @@ export const createSeamlessScroll = (
     }
   };
 
+  const handleWheel = (event: WheelEvent) => {
+    if (!config.wheelScroll || !config.hoverPause || !state.isHovering || !state.isScrollNeeded) {
+      return;
+    }
+
+    const delta = isVertical() ? event.deltaY : event.deltaX || event.deltaY;
+    if (delta === 0) return;
+
+    event.preventDefault();
+    setScrollDistance(state.scrollDistance + delta);
+    applyScrollPosition();
+    lastScrollPosition = state.scrollDistance;
+  };
+
   const clearObserver = () => {
     if (observer) {
       observer.disconnect();
@@ -657,6 +675,7 @@ export const createSeamlessScroll = (
     if (currentContainer) {
       currentContainer.addEventListener("mouseenter", handleMouseEnter);
       currentContainer.addEventListener("mouseleave", handleMouseLeave);
+      currentContainer.addEventListener("wheel", handleWheel, { passive: false });
     }
 
     // 更新尺寸并启动滚动
@@ -685,6 +704,7 @@ export const createSeamlessScroll = (
     if (currentContainer) {
       currentContainer.removeEventListener("mouseenter", handleMouseEnter);
       currentContainer.removeEventListener("mouseleave", handleMouseLeave);
+      currentContainer.removeEventListener("wheel", handleWheel);
     }
 
     // 断开观察者
