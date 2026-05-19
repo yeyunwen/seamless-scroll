@@ -5,6 +5,7 @@ export default [
     items: [
       { text: "介绍", link: "/guide/" },
       { text: "快速开始", link: "/guide/getting-started/" },
+      { text: "发布流程", link: "/guide/release/" },
     ],
   },
   {

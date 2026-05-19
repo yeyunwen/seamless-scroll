@@ -26,7 +26,8 @@
     "prepare": "husky",
     "docs:dev": "pnpm --filter docs dev ",
     "docs:build": "pnpm --filter docs build ",
-    "docs:preview": "pnpm --filter docs preview "
+    "docs:preview": "pnpm --filter docs preview ",
+    "release": "pnpm build && pnpm changeset publish"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
