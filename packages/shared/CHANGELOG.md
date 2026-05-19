@@ -1,5 +1,13 @@
 # @seamless-scroll/shared
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [38b720a]
+- Updated dependencies [88dceae]
+  - @seamless-scroll/core@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes
