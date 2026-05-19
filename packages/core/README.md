@@ -66,6 +66,7 @@ function createSeamlessScroll(
 | 参数             | 类型                           | 默认值       | 描述                               |
 | ---------------- | ------------------------------ | ------------ | ---------------------------------- |
 | `direction`      | `'vertical'` \| `'horizontal'` | `'vertical'` | 滚动方向                           |
+| `reverse`        | `boolean`                      | `false`      | 是否反向滚动                       |
 | `speed`          | `number`                       | `60`         | 滚动速度（像素/秒）                |
 | `duration`       | `number`                       | `1000`       | 每次滚动动画的持续时间（毫秒）     |
 | `pauseTime`      | `number`                       | `0`          | 每次滚动后的暂停时间（毫秒）       |

@@ -41,6 +41,7 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
   const scrollOptions = computed((): ScrollOptions => {
     return {
       direction: hooksProps.value.direction,
+      reverse: hooksProps.value.reverse,
       speed: hooksProps.value.speed,
       duration: hooksProps.value.duration,
       pauseTime: hooksProps.value.pauseTime,
@@ -111,6 +112,7 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
         const newOptions: Partial<ScrollOptions> = {
           autoScroll: hooksProps.value.autoScroll ?? true,
           direction: hooksProps.value.direction,
+          reverse: hooksProps.value.reverse,
           duration: hooksProps.value.duration,
           forceScrolling: hooksProps.value.forceScrolling ?? false,
           hoverPause: hooksProps.value.hoverPause ?? true,

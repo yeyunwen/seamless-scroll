@@ -26,6 +26,7 @@ const itemElements = ref<Map<number, HTMLElement>>(new Map());
 const hooksProps = computed<HooksProps>(() => {
   return {
     direction: props.direction,
+    reverse: props.reverse,
     speed: props.speed,
     duration: props.duration,
     pauseTime: props.pauseTime,

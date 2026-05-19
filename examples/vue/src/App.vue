@@ -5,6 +5,7 @@ import { type ListItem, listData as initListData, getItemStyle } from "../../sha
 
 // 配置选项
 const direction = ref<"vertical" | "horizontal">("vertical");
+const reverse = ref(false);
 const speed = ref(50);
 const pauseTime = ref(2000);
 const pauseOnHover = ref(true);
@@ -278,6 +279,13 @@ onBeforeUnmount(() => {
 
       <div class="config-group">
         <label>
+          <input type="checkbox" v-model="reverse" />
+          反向滚动
+        </label>
+      </div>
+
+      <div class="config-group">
+        <label>
           <input type="checkbox" v-model="pauseOnHover" />
           悬停时暂停
         </label>
@@ -406,6 +414,7 @@ onBeforeUnmount(() => {
           ref="scrollRef"
           :data="displayData"
           :direction="direction"
+          :reverse="reverse"
           :speed="speed"
           :pause-time="pauseTime"
           :hover-pause="pauseOnHover"

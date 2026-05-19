@@ -8,6 +8,8 @@ export interface ScrollOptions {
   dataTotal: number;
   /* 滚动方向：vertical（上下）或 horizontal（左右） */
   direction?: ScrollDirection;
+  /* 是否反向滚动 */
+  reverse?: boolean;
   /* 滚动速度（像素/秒） */
   speed?: number;
   /* 每次滚动动画的持续时间（毫秒） */

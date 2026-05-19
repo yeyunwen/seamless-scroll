@@ -97,6 +97,12 @@ export default App;
 <SeamlessScroll data={items} direction="horizontal" speed={40} />
 ```
 
+### 反向滚动
+
+```jsx
+<SeamlessScroll data={items} direction="horizontal" reverse speed={40} />
+```
+
 ### 虚拟滚动
 
 SeamlessScroll 组件支持虚拟滚动，特别适用于大数据量渲染场景。当列表项较多时（通常超过 50 项），组件会自动启用虚拟滚动，仅渲染可见区域内的项目，显著提升渲染性能。
@@ -171,6 +177,7 @@ export default App;
 | --------------------- | ---------------------------------------------------------- | ------------ | ------------------------------------------------------ |
 | `data`                | `T[]`                                                      | `[]`         | 要展示的数据列表（支持泛型类型T）                      |
 | `direction`           | `'vertical'` \| `'horizontal'`                             | `'vertical'` | 滚动方向                                               |
+| `reverse`             | `boolean`                                                  | `false`      | 是否反向滚动                                           |
 | `speed`               | `number`                                                   | `50`         | 滚动速度（像素/秒）                                    |
 | `duration`            | `number`                                                   | `500`        | 每次滚动动画的持续时间（毫秒）                         |
 | `pauseTime`           | `number`                                                   | `2000`       | 每次滚动后的暂停时间（毫秒）                           |
@@ -258,6 +265,7 @@ const ListItem = ({ item, index }) => (
 function useSeamlessScroll<T>(props: {
   dataTotal: number;
   direction?: "vertical" | "horizontal";
+  reverse?: boolean;
   speed?: number;
   duration?: number;
   pauseTime?: number;

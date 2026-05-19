@@ -12,6 +12,7 @@ export const DEFAULT_OPTIONS: Required<
   Omit<ScrollOptions, "dataTotal" | "itemSize" | "minItemSize">
 > = {
   direction: "vertical",
+  reverse: false,
   speed: 50,
   duration: 500,
   pauseTime: 2000,
@@ -87,6 +88,10 @@ export const createSeamlessScroll = (
 
   const isVertical = () => {
     return config.direction === "vertical";
+  };
+
+  const getTranslateDistance = () => {
+    return config.reverse ? state.scrollDistance - state.contentSize : -state.scrollDistance;
   };
 
   const getBaseContainerSize = () => {
@@ -299,8 +304,8 @@ export const createSeamlessScroll = (
     // 更新尺寸和滚动需求
     updateSize();
 
-    // 如果改变了滚动方向，可能需要重置滚动位置
-    if (newOptions.direction !== undefined) {
+    // 如果改变了滚动方向或反向配置，需要重置滚动位置
+    if (newOptions.direction !== undefined || newOptions.reverse !== undefined) {
       resetScroll();
     }
   };
@@ -445,7 +450,7 @@ export const createSeamlessScroll = (
     // 通过 CSS transform 实现平滑滚动
     currentContent.style.transform = `translate${
       isVertical() ? "Y" : "X"
-    }(${-state.scrollDistance}px)`;
+    }(${getTranslateDistance()}px)`;
 
     if (state.isVirtualized) {
       // 更新虚拟滚动的可见项目
