@@ -10,6 +10,7 @@ import { listData as initialListData, ListItem, getItemStyle } from "../../share
 const App = () => {
   const [listData, setListData] = useState<ListItem[]>(initialListData);
   const [direction, setDirection] = useState<ScrollDirection>("vertical");
+  const [reverse, setReverse] = useState(false);
   const [speed, setSpeed] = useState(50);
   const [pauseOnHover, setPauseOnHover] = useState(true);
   const [rowHeight, setRowHeight] = useState(40);
@@ -287,6 +288,13 @@ const App = () => {
 
         <div className="config-group">
           <label>
+            <input type="checkbox" checked={reverse} onChange={() => setReverse(!reverse)} />
+            反向滚动
+          </label>
+        </div>
+
+        <div className="config-group">
+          <label>
             <input
               type="checkbox"
               checked={pauseOnHover}
@@ -461,6 +469,7 @@ const App = () => {
             data={displayData}
             speed={speed}
             direction={direction}
+            reverse={reverse}
             hoverPause={pauseOnHover}
             forceScrolling
             pauseTime={pauseTime}

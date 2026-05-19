@@ -112,6 +112,18 @@ const handleItemClick = (item: Announcement) => {
 </template>
 ```
 
+### 反向滚动
+
+```vue
+<template>
+  <SeamlessScroll :data="items" direction="horizontal" reverse :speed="40" :item-size="50">
+    <template #default="{ item }">
+      <div class="scroll-item">{{ item.text }}</div>
+    </template>
+  </SeamlessScroll>
+</template>
+```
+
 ### 配置多个选项
 
 ```vue
@@ -142,6 +154,7 @@ const handleItemClick = (item: Announcement) => {
 | --------------------- | ---------------------------------------------------------- | ------------ | ------------------------------------------------------ |
 | `data`                | `T[]`                                                      | `[]`         | 要展示的数据列表（支持泛型类型T）                      |
 | `direction`           | `'vertical'` \| `'horizontal'`                             | `'vertical'` | 滚动方向                                               |
+| `reverse`             | `boolean`                                                  | `false`      | 是否反向滚动                                           |
 | `speed`               | `number`                                                   | `50`         | 滚动速度（像素/秒）                                    |
 | `duration`            | `number`                                                   | `500`        | 每次滚动动画的持续时间（毫秒）                         |
 | `pauseTime`           | `number`                                                   | `2000`       | 每次滚动后的暂停时间（毫秒）                           |
@@ -179,6 +192,7 @@ const handleItemClick = (item: Announcement) => {
 function useSeamlessScroll<T>(props: {
   dataTotal: number;
   direction?: "vertical" | "horizontal";
+  reverse?: boolean;
   speed?: number;
   duration?: number;
   pauseTime?: number;

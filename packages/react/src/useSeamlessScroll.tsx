@@ -41,6 +41,7 @@ export function useSeamlessScroll<T = any>(props: HooksProps) {
   const getScrollOptions = useCallback((): ScrollOptions => {
     return {
       direction: props.direction || "vertical",
+      reverse: props.reverse ?? false,
       speed: props.speed ?? 50,
       duration: props.duration ?? 500,
       pauseTime: props.pauseTime ?? 2000,
@@ -55,6 +56,7 @@ export function useSeamlessScroll<T = any>(props: HooksProps) {
     };
   }, [
     props.direction,
+    props.reverse,
     props.speed,
     props.duration,
     props.pauseTime,
