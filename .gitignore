@@ -7,3 +7,4 @@ docs/.vitepress/dist
 dist/
 .vitepress/cache/
 .vitepress/dist/
+coverage/

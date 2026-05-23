@@ -1,17 +1,17 @@
 import { defineConfig } from "vitest/config";
+import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
+  plugins: [vue()],
   test: {
     globals: true,
     environment: "happy-dom",
-    // 设置测试文件匹配模式
-    include: ["src/**/*.{test,spec}.{js,ts}"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "lcov"],
       reportsDirectory: "coverage",
-      include: ["src/**/*.ts"],
-      exclude: ["src/**/*.d.ts", "src/__tests__/**", "src/index.ts", "src/types.ts"],
+      include: ["src/SeamlessScroll.vue", "src/useSeamlessScroll.ts"],
       thresholds: {
         lines: 90,
         functions: 90,

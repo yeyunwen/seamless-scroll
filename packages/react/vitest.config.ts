@@ -1,17 +1,19 @@
 import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
+  plugins: [react()],
   test: {
     globals: true,
+    setupFiles: ["src/__tests__/setup.ts"],
     environment: "happy-dom",
-    // 设置测试文件匹配模式
-    include: ["src/**/*.{test,spec}.{js,ts}"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "lcov"],
       reportsDirectory: "coverage",
-      include: ["src/**/*.ts"],
-      exclude: ["src/**/*.d.ts", "src/__tests__/**", "src/index.ts", "src/types.ts"],
+      include: ["src/SeamlessScroll.tsx", "src/useSeamlessScroll.tsx"],
+      exclude: ["src/**/*.d.ts", "src/__tests__/**", "src/index.tsx", "src/types.ts"],
       thresholds: {
         lines: 90,
         functions: 90,

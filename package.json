@@ -34,8 +34,11 @@
     "typecheck:vue": "pnpm --filter @seamless-scroll/vue typecheck",
     "typecheck:docs": "pnpm --filter @seamless-scroll/docs typecheck",
     "typecheck:examples": "pnpm --filter react-example typecheck && pnpm --filter vue-example typecheck",
-    "test": "pnpm test:core",
-    "test:core": "pnpm --filter @seamless-scroll/core test -- --run"
+    "test": "pnpm test:core && pnpm test:react && pnpm test:vue",
+    "test:core": "pnpm --filter @seamless-scroll/core test",
+    "test:coverage": "pnpm --filter @seamless-scroll/core test:coverage && pnpm --filter @seamless-scroll/react test:coverage && pnpm --filter @seamless-scroll/vue test:coverage",
+    "test:react": "pnpm --filter @seamless-scroll/react test",
+    "test:vue": "pnpm --filter @seamless-scroll/vue test"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -64,6 +67,7 @@
     "vite-plugin-dts": "catalog:",
     "vitepress": "catalog:",
     "vitest": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "vue-eslint-parser": "catalog:"
   }
 }
