@@ -39,7 +39,7 @@ const createInstance = (options: Partial<ScrollOptions> = {}) => {
   return { container, content, instance, realList };
 };
 
-describe("core scroll behavior", () => {
+describe("核心滚动行为", () => {
   let instances: SeamlessScrollResult[] = [];
 
   beforeEach(() => {
@@ -53,7 +53,7 @@ describe("core scroll behavior", () => {
     vi.restoreAllMocks();
   });
 
-  it("supports start, pause, resume, stop and reset state transitions", () => {
+  it("支持 start、pause、resume、stop、reset 状态流转", () => {
     const { content, instance } = createInstance();
     instances.push(instance);
 
@@ -76,7 +76,7 @@ describe("core scroll behavior", () => {
     expect(content.style.transform).toBe("translateY(0px)");
   });
 
-  it("does not scroll when content is smaller and forceScrolling is false", () => {
+  it("内容小于容器且 forceScrolling 为 false 时不会滚动", () => {
     const { instance, realList } = createInstance({ forceScrolling: false });
     instances.push(instance);
     setElementSize(realList, 100, 100);
@@ -88,7 +88,7 @@ describe("core scroll behavior", () => {
     expect(instance.state.isScrolling).toBe(false);
   });
 
-  it("scrolls when forceScrolling is true even if content is smaller", () => {
+  it("内容小于容器但 forceScrolling 为 true 时仍可滚动", () => {
     const { instance, realList } = createInstance({ forceScrolling: true });
     instances.push(instance);
     setElementSize(realList, 100, 100);
@@ -100,7 +100,7 @@ describe("core scroll behavior", () => {
     expect(instance.state.isScrolling).toBe(true);
   });
 
-  it("updates options and resets when direction or reverse changes", () => {
+  it("更新 direction 或 reverse 时会重置滚动位置", () => {
     const { content, instance } = createInstance({ direction: "vertical" });
     instances.push(instance);
 
@@ -110,7 +110,7 @@ describe("core scroll behavior", () => {
     expect(content.style.transform).toBe("translateX(-400px)");
   });
 
-  it("destroy removes wheel listeners and resets transform", () => {
+  it("destroy 后移除滚轮监听并重置 transform", () => {
     const { container, content, instance } = createInstance({ wheelScroll: true });
     instances.push(instance);
 
@@ -127,7 +127,7 @@ describe("core scroll behavior", () => {
   });
 });
 
-describe("core virtual scroll behavior", () => {
+describe("核心虚拟滚动行为", () => {
   let instances: SeamlessScrollResult[] = [];
 
   afterEach(() => {
@@ -136,14 +136,14 @@ describe("core virtual scroll behavior", () => {
     vi.restoreAllMocks();
   });
 
-  it("does not enable virtual scrolling when virtual is false", () => {
+  it("virtual 为 false 时不启用虚拟滚动", () => {
     const { instance } = createInstance({ dataTotal: 200, virtual: false });
     instances.push(instance);
 
     expect(instance.state.isVirtualized).toBe(false);
   });
 
-  it("auto enables virtual scrolling only after threshold and with size option", () => {
+  it("auto 模式仅在达到阈值且提供尺寸配置时启用虚拟滚动", () => {
     const small = createInstance({ dataTotal: 99, itemSize: 20, virtual: "auto" });
     instances.push(small.instance);
     expect(small.instance.state.isVirtualized).toBe(false);
@@ -154,7 +154,7 @@ describe("core virtual scroll behavior", () => {
     expect(large.instance.state.contentSize).toBe(2000);
   });
 
-  it("auto falls back to non-virtual scrolling without size option", () => {
+  it("auto 模式缺少尺寸配置时回退为非虚拟滚动", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const { instance } = createInstance({
       dataTotal: 100,
@@ -168,7 +168,7 @@ describe("core virtual scroll behavior", () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining("virtual=auto requires"));
   });
 
-  it("throws clear error when virtual is true without size option", () => {
+  it("virtual 为 true 但缺少尺寸配置时抛出明确错误", () => {
     expect(() =>
       createInstance({
         dataTotal: 100,
@@ -179,7 +179,7 @@ describe("core virtual scroll behavior", () => {
     ).toThrow("virtual=true requires itemSize or minItemSize");
   });
 
-  it("calculates fixed-size virtual range", () => {
+  it("能够计算固定尺寸虚拟滚动范围", () => {
     const { instance } = createInstance({
       dataTotal: 100,
       itemSize: 20,
@@ -194,7 +194,7 @@ describe("core virtual scroll behavior", () => {
     expect(instance.methods.getVirtualCloneRange()).toEqual({ startIndex: 0, endIndex: 14 });
   });
 
-  it("updates dynamic item measurements immutably and predicts by type", () => {
+  it("以不可变方式更新动态尺寸缓存并按类型预测尺寸", () => {
     const { instance } = createInstance({
       dataTotal: 100,
       itemSize: undefined,
