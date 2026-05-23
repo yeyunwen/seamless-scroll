@@ -1,4 +1,5 @@
 export type ScrollDirection = "vertical" | "horizontal";
+export type VirtualScrollMode = boolean | "auto";
 
 // DOM 元素或获取 DOM 元素的函数
 export type ElementOrGetter = HTMLElement | (() => HTMLElement | null);
@@ -24,6 +25,10 @@ export interface ScrollOptions {
   autoScroll?: boolean;
   /* 是否强制滚动（即使内容未超出容器） */
   forceScrolling?: boolean;
+  /* 虚拟滚动启用模式：auto 根据阈值和内容尺寸自动启用；true 强制启用；false 禁用 */
+  virtual?: VirtualScrollMode;
+  /* auto 模式下启用虚拟滚动的最小数据量 default 100 */
+  virtualThreshold?: number;
   /* 虚拟滚动项目缓冲区大小（前后各多渲染几个项目）default 5 */
   virtualScrollBuffer?: number;
   /* 估计的每个项目高度/宽度（像素）- 用于初始计算

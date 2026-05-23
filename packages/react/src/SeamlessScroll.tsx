@@ -51,6 +51,9 @@ function InnerSeamlessScroll<T>(
     containerWidth,
     containerHeight,
     direction,
+    itemKey,
+    itemSize,
+    onItemClick,
   } = mergedProps;
 
   // 使用滚动 hook
@@ -107,12 +110,11 @@ function InnerSeamlessScroll<T>(
       return [];
     }
     const { startIndex, endIndex } = methods.getVirtualCloneRange();
-    return data.slice(startIndex, endIndex);
+    return endIndex >= startIndex ? data.slice(startIndex, endIndex + 1) : [];
   }, [data, methods, state.isVirtualized]);
 
   // 为虚拟滚动优化，确保realList容器维持完整高度
   const virtualRealListStyle = useMemo<CSSProperties>(() => {
-    console.log("virtualRealListStyle", state.contentSize);
     if (!state.isVirtualized) {
       return {};
     }
@@ -137,7 +139,7 @@ function InnerSeamlessScroll<T>(
         return {};
       }
 
-      const totalItems = props.data.length;
+      const totalItems = data.length;
 
       // 确保索引始终在原始数据范围内
       const normalizedIndex = totalItems > 0 ? index % totalItems : 0;
@@ -153,11 +155,11 @@ function InnerSeamlessScroll<T>(
       return {
         position: "absolute",
         transform: isVertical() ? `translateY(${position}px)` : `translateX(${position}px)`,
-        ...(props.itemSize ? { [isVertical() ? "height" : "width"]: `${props.itemSize}px` } : {}),
+        ...(itemSize ? { [isVertical() ? "height" : "width"]: `${itemSize}px` } : {}),
         display: "flex",
       };
     },
-    [props.itemSize, props.data.length, state.isVirtualized, isVertical, methods],
+    [itemSize, data.length, state.isVirtualized, isVertical, methods],
   );
 
   // 为项目生成唯一键
@@ -165,15 +167,15 @@ function InnerSeamlessScroll<T>(
     (item: T, index: number, prefix = "", isVirtualized = false) => {
       const _itemKey = isVirtualized ? (item as any)._originalIndex : index;
 
-      if (!props.itemKey) return `${prefix}-${_itemKey}`;
+      if (!itemKey) return `${prefix}-${_itemKey}`;
 
-      if (typeof props.itemKey === "function") {
-        return `${prefix}-${props.itemKey(item, index)}`;
+      if (typeof itemKey === "function") {
+        return `${prefix}-${itemKey(item, _itemKey)}`;
       }
 
-      return `${prefix}-${(item as any)[props.itemKey] ?? _itemKey}`;
+      return `${prefix}-${(item as any)[itemKey] ?? _itemKey}`;
     },
-    [props],
+    [itemKey],
   );
 
   // 拿到项目元素
@@ -226,7 +228,7 @@ function InnerSeamlessScroll<T>(
               className="smooth-scroll-item"
               style={{ ...styles.item, ...getVirtualItemStyle(item._originalIndex) }}
               ref={(el) => itemRef(el, item)}
-              onClick={() => props.onItemClick?.(item, item._originalIndex)}
+              onClick={() => onItemClick?.(item, item._originalIndex)}
             >
               {renderItem(item, item._originalIndex)}
             </div>
@@ -237,7 +239,7 @@ function InnerSeamlessScroll<T>(
               key={getItemKey(item, index, `real-${index}`)}
               className="smooth-scroll-item"
               style={{ ...styles.item }}
-              onClick={() => props.onItemClick?.(item, index)}
+              onClick={() => onItemClick?.(item, index)}
             >
               {renderItem(item, index)}
             </div>
@@ -250,7 +252,7 @@ function InnerSeamlessScroll<T>(
               key={getItemKey(item, index, `clone-${index}`)}
               className="smooth-scroll-item"
               style={styles.item}
-              onClick={() => props.onItemClick?.(item, index)}
+              onClick={() => onItemClick?.(item, index)}
             >
               {renderItem(item, index)}
             </div>
@@ -261,7 +263,7 @@ function InnerSeamlessScroll<T>(
               key={getItemKey(item, index, `clone-${index}`)}
               className="smooth-scroll-item"
               style={styles.item}
-              onClick={() => props.onItemClick?.(item, index)}
+              onClick={() => onItemClick?.(item, index)}
             >
               {renderItem(item, index)}
             </div>
@@ -270,7 +272,7 @@ function InnerSeamlessScroll<T>(
       }
     },
     [
-      props,
+      onItemClick,
       data,
       virtualItems,
       virtualCloneItems,
@@ -290,10 +292,13 @@ function InnerSeamlessScroll<T>(
       return;
     }
 
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
     if (!data.length) {
       methods.clearObserver();
+      itemElements.current.clear();
     } else {
-      setTimeout(() => {
+      timer = setTimeout(() => {
         // 数据变化时，重置滚动状态并更新尺寸
         methods.reset();
         // 等待 DOM 更新后重新计算尺寸
@@ -302,7 +307,13 @@ function InnerSeamlessScroll<T>(
         methods.resetObserver();
       }, 0);
     }
-  }, [data, containerRef, realListRef, methods]);
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [data, methods]);
 
   // 暴露方法给父组件
   useImperativeHandle(

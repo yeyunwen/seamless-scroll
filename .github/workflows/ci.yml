@@ -28,10 +28,22 @@ jobs:
           cache: "pnpm"
 
       - name: Install deps
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test:core
 
       - name: Build
         run: pnpm build
+
+      - name: Build docs
+        run: pnpm docs:build
 
       - name: Publish preview package
         run: pnpx pkg-pr-new publish --compact --pnpm './packages/*'

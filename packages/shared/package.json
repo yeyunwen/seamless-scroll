@@ -1,7 +1,7 @@
 {
   "name": "@seamless-scroll/shared",
   "version": "0.2.2",
-  "description": "",
+  "description": "Shared types for seamless scrolling packages",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -13,7 +13,12 @@
     },
     "./*": "./*"
   },
-  "keywords": [],
+  "keywords": [
+    "scroll",
+    "seamless",
+    "shared",
+    "types"
+  ],
   "author": "yeyunwen",
   "license": "MIT",
   "packageManager": "pnpm@10.6.5",
@@ -22,7 +27,8 @@
   },
   "scripts": {
     "dev": "tsup --watch",
-    "build": "tsup"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "repository": {
     "type": "git",

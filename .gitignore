@@ -3,3 +3,8 @@ dist
 docs/.vitepress/cache
 docs/.vitepress/dist
 
+*.tsbuildinfo
+dist/
+.vitepress/cache/
+.vitepress/dist/
+coverage/

@@ -1,10 +1,11 @@
 {
+  "name": "seamless-scroll",
   "private": true,
   "description": "seamless scroll",
   "type": "module",
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "packageManager": "pnpm@10.6.5",
   "engines": {
     "node": ">=24 <25"
@@ -19,15 +20,25 @@
     "build:shared": "pnpm --filter @seamless-scroll/shared build",
     "build:vue": "pnpm --filter @seamless-scroll/vue build",
     "build:react": "pnpm --filter @seamless-scroll/react build",
-    "typecheck": "tsc --noEmit",
-    "typecheck:core": "tsc --noEmit -p packages/core",
+    "typecheck": "pnpm typecheck:core && pnpm typecheck:shared && pnpm typecheck:react && pnpm typecheck:vue && pnpm typecheck:docs && pnpm typecheck:examples",
+    "typecheck:core": "pnpm --filter @seamless-scroll/core typecheck",
     "lint": "eslint packages/**/src --ext .ts,.tsx,.js,.jsx,.vue",
     "format": "prettier --write --cache .",
     "prepare": "husky",
     "docs:dev": "pnpm --filter docs dev ",
     "docs:build": "pnpm --filter docs build ",
     "docs:preview": "pnpm --filter docs preview ",
-    "release": "pnpm build && pnpm changeset publish"
+    "release": "pnpm build && pnpm changeset publish",
+    "typecheck:shared": "pnpm --filter @seamless-scroll/shared typecheck",
+    "typecheck:react": "pnpm --filter @seamless-scroll/react typecheck",
+    "typecheck:vue": "pnpm --filter @seamless-scroll/vue typecheck",
+    "typecheck:docs": "pnpm --filter @seamless-scroll/docs typecheck",
+    "typecheck:examples": "pnpm --filter react-example typecheck && pnpm --filter vue-example typecheck",
+    "test": "pnpm test:core && pnpm test:react && pnpm test:vue",
+    "test:core": "pnpm --filter @seamless-scroll/core test",
+    "test:coverage": "pnpm --filter @seamless-scroll/core test:coverage && pnpm --filter @seamless-scroll/react test:coverage && pnpm --filter @seamless-scroll/vue test:coverage",
+    "test:react": "pnpm --filter @seamless-scroll/react test",
+    "test:vue": "pnpm --filter @seamless-scroll/vue test"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -56,6 +67,7 @@
     "vite-plugin-dts": "catalog:",
     "vitepress": "catalog:",
     "vitest": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "vue-eslint-parser": "catalog:"
   }
 }
