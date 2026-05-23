@@ -3,7 +3,7 @@
 无缝滚动组件库的共享工具和类型定义。
 
 [![npm version](https://img.shields.io/npm/v/@seamless-scroll/shared.svg?style=flat)](https://www.npmjs.com/package/@seamless-scroll/shared)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 介绍
 

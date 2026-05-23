@@ -49,6 +49,8 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
       wheelScroll: hooksProps.value.wheelScroll ?? true,
       autoScroll: hooksProps.value.autoScroll ?? true,
       forceScrolling: hooksProps.value.forceScrolling ?? false,
+      virtual: hooksProps.value.virtual ?? "auto",
+      virtualThreshold: hooksProps.value.virtualThreshold ?? 100,
       virtualScrollBuffer: hooksProps.value.virtualScrollBuffer ?? 5,
       itemSize: hooksProps.value.itemSize,
       minItemSize: hooksProps.value.minItemSize,
@@ -58,8 +60,6 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
 
   // 初始化滚动
   const initScroll = () => {
-    console.log("initScorll");
-
     if (!containerRef.value || !contentRef.value || !realListRef.value) return;
 
     // 销毁可能存在的实例
@@ -119,6 +119,8 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
           wheelScroll: hooksProps.value.wheelScroll ?? true,
           pauseTime: hooksProps.value.pauseTime,
           speed: hooksProps.value.speed,
+          virtual: hooksProps.value.virtual ?? "auto",
+          virtualThreshold: hooksProps.value.virtualThreshold ?? 100,
           virtualScrollBuffer: hooksProps.value.virtualScrollBuffer ?? 5,
           itemSize: hooksProps.value.itemSize,
           minItemSize: hooksProps.value.minItemSize,
@@ -156,7 +158,7 @@ export const useSeamlessScroll = <T = any>(hooksProps: Ref<HooksProps>) => {
     predictItemSize: (index: number, type?: string) =>
       scrollInstance?.methods.predictItemSize(index, type) ?? 0,
     getVirtualCloneRange: () =>
-      scrollInstance?.methods.getVirtualCloneRange() ?? { startIndex: 0, endIndex: 0 },
+      scrollInstance?.methods.getVirtualCloneRange() ?? { startIndex: 0, endIndex: -1 },
   };
 
   return {

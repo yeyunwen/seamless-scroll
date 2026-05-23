@@ -3,7 +3,7 @@
 Vue 3 无缝滚动组件，基于 Composition API 构建。
 
 [![npm version](https://img.shields.io/npm/v/@seamless-scroll/vue.svg?style=flat)](https://www.npmjs.com/package/@seamless-scroll/vue)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Vue](https://img.shields.io/badge/Vue-3.5-brightgreen)](https://vuejs.org/)
 
 ## 介绍
@@ -168,6 +168,8 @@ const handleItemClick = (item: Announcement) => {
 | `style`               | `CSSProperties`                                            | -            | 自定义样式                                             |
 | `itemSize`            | `number`                                                   | -            | 固定项目尺寸（像素），用于虚拟滚动计算                 |
 | `minItemSize`         | `number`                                                   | -            | 最小项目尺寸（像素），用于变高度虚拟滚动               |
+| `virtual`             | `boolean \| 'auto'`                                  | `'auto'`    | 虚拟滚动模式：auto 自动、true 强制、false 禁用          |
+| `virtualThreshold`    | `number`                                                   | `100`        | auto 模式下启用虚拟滚动的最小数据量                    |
 | `virtualScrollBuffer` | `number`                                                   | `5`          | 虚拟滚动缓冲区大小，值越大，滚动越平滑，但渲染项目更多 |
 | `itemKey`             | `string \| ((item: T, index: number) => string \| number)` | -            | 项目键名或生成函数，用于列表项的唯一标识               |
 
@@ -175,7 +177,7 @@ const handleItemClick = (item: Announcement) => {
 
 | 事件名       | 参数                       | 描述             |
 | ------------ | -------------------------- | ---------------- |
-| `item-click` | `(item: T, index: number)` | 点击列表项时触发 |
+| `item-click` | `(item: T, index: number)` | 点击列表项时触发（内部 emit 名为 `itemClick`） |
 
 ### 组件插槽
 
@@ -200,6 +202,8 @@ function useSeamlessScroll<T>(props: {
   wheelScroll?: boolean;
   autoScroll?: boolean;
   forceScrolling?: boolean;
+  virtual?: boolean | "auto";
+  virtualThreshold?: number;
   itemSize?: number;
   minItemSize?: number;
   virtualScrollBuffer?: number;

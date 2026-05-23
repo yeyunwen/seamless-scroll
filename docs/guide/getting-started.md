@@ -57,7 +57,9 @@ const handleItemClick = (item) => {
       @item-click="handleItemClick"
       forceScrolling
     >
-      <div>{{ item.text }}</div>
+      <template #default="{ item }">
+        <div>{{ item.text }}</div>
+      </template>
     </SeamlessScroll>
   </div>
 </template>

@@ -5,7 +5,7 @@
 无缝滚动组件库，支持 Vue 和 React 框架，提供高性能、可定制的内容滚动解决方案。集成简单，定制灵活，性能出色，帮助您轻松实现各种滚动效果。
 
 [![npm version](https://img.shields.io/npm/v/@seamless-scroll/core.svg?style=flat)](https://www.npmjs.com/package/@seamless-scroll/core)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 [![Vue](https://img.shields.io/badge/Vue-3.5-brightgreen)](https://vuejs.org/)
 [![React](https://img.shields.io/badge/React-19-blue)](https://reactjs.org/)
@@ -143,7 +143,7 @@ seamless-scroll/
 
 确保已安装以下工具：
 
-- Node.js (v18+)
+- Node.js (>=24 <25)
 - pnpm (v10+)
 
 ### 安装依赖

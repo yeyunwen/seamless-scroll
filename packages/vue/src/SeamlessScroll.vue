@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T">
-import { computed, watch, nextTick, CSSProperties, ref, onMounted, onUnmounted } from "vue";
+import { computed, watch, nextTick, CSSProperties, ref, onUnmounted } from "vue";
 import { DEFAULT_OPTIONS } from "@seamless-scroll/core";
 import type { SeamlessScrollRef, VirtualScrollItem } from "@seamless-scroll/shared";
 import { useSeamlessScroll } from "./useSeamlessScroll";
@@ -34,6 +34,8 @@ const hooksProps = computed<HooksProps>(() => {
     wheelScroll: props.wheelScroll,
     autoScroll: props.autoScroll,
     forceScrolling: props.forceScrolling,
+    virtual: props.virtual,
+    virtualThreshold: props.virtualThreshold,
     virtualScrollBuffer: props.virtualScrollBuffer,
     itemSize: props.itemSize,
     minItemSize: props.minItemSize,
@@ -102,7 +104,7 @@ const styles = computed<VueSeamlessScrollStyles>(() => {
 // 计算克隆列表项目 - 只包含可见区域的项目
 const virtualCloneItems = computed<T[]>(() => {
   const { startIndex, endIndex } = methods.getVirtualCloneRange();
-  return props.data.slice(startIndex, endIndex);
+  return endIndex >= startIndex ? props.data.slice(startIndex, endIndex + 1) : [];
 });
 
 // 为虚拟滚动优化，确保realList容器维持完整高度
@@ -208,10 +210,6 @@ watch(
   },
 );
 
-// 当挂载或更新时测量所有项目
-onMounted(() => {
-  nextTick(() => {});
-});
 
 // 清理观察者
 onUnmounted(() => {

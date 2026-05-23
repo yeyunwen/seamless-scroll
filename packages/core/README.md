@@ -1,21 +1,9 @@
 # @seamless-scroll/core
 
-无缝滚动的核心功能实现，提供与框架无关的滚动逻辑。
+无缝滚动的框架无关核心包，负责滚动状态、尺寸计算、动画控制、悬停暂停、滚轮手动滚动、克隆数量和虚拟滚动范围计算。
 
 [![npm version](https://img.shields.io/npm/v/@seamless-scroll/core.svg?style=flat)](https://www.npmjs.com/package/@seamless-scroll/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-## 介绍
-
-`@seamless-scroll/core` 提供了实现无缝滚动所需的全部核心逻辑，包括:
-
-- 滚动状态管理
-- 滚动动画控制
-- 尺寸计算
-- 智能克隆数量计算
-- 事件处理
-
-此包可以直接使用，也可以作为构建更高级UI组件的基础。
 
 ## 安装
 
@@ -27,136 +15,88 @@ pnpm add @seamless-scroll/core
 yarn add @seamless-scroll/core
 ```
 
-## API 文档
+## API
 
-### createSeamlessScroll 函数
+### createSeamlessScroll
 
-这是核心包的主要入口函数，用于创建无缝滚动实例。
-
-#### 参数
-
-```typescript
+```ts
 function createSeamlessScroll(
-  container: HTMLElement,
-  content: HTMLElement,
-  realList: HTMLElement,
-  options?: ScrollOptions,
-  events?: ScrollEvents,
-  onStateChange?: (state: ScrollState) => void,
+  containerEl: HTMLElement | (() => HTMLElement | null),
+  contentEl: HTMLElement | (() => HTMLElement | null),
+  realListEl: HTMLElement | (() => HTMLElement | null),
+  options: ScrollOptions,
+  onStateChange?: () => [(state: ScrollState) => void, (keyof ScrollState)[]],
 ): SeamlessScrollResult;
 ```
 
-- `container`: 容器元素，通常是有固定尺寸且溢出隐藏的外部容器
-- `content`: 内容元素，包含需要滚动的实际内容
-- `realList`: 滚动内容元素，包含需要滚动的实际内容
-- `options`: 滚动配置选项，可选
-- `events`: 事件回调函数，可选
-- `onStateChange`: 状态改变时的回调，可选
+- `containerEl`：外层容器，通常需要固定宽高和 `overflow: hidden`。
+- `contentEl`：执行 `transform` 的滚动内容容器。
+- `realListEl`：真实列表内容，用于测量内容尺寸。
+- `options`：滚动配置。
+- `onStateChange`：可选状态订阅器，返回回调和需要监听的状态字段。
 
-#### 返回值
+### ScrollOptions
 
-函数返回一个包含以下属性的对象：
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `dataTotal` | `number` | 必填 | 数据总数 |
+| `direction` | `'vertical' \| 'horizontal'` | `'vertical'` | 滚动方向 |
+| `reverse` | `boolean` | `false` | 是否反向滚动 |
+| `speed` | `number` | `50` | 滚动速度，单位 px/s |
+| `duration` | `number` | `500` | 单轮动画持续时间，单位 ms |
+| `pauseTime` | `number` | `2000` | 单轮动画后的暂停时间，单位 ms |
+| `hoverPause` | `boolean` | `true` | 鼠标悬停时是否暂停 |
+| `wheelScroll` | `boolean` | `true` | 悬停暂停时是否允许滚轮手动滚动 |
+| `autoScroll` | `boolean` | `true` | 初始化后是否自动开始滚动 |
+| `forceScrolling` | `boolean` | `true` | 内容未超出容器时是否仍强制滚动 |
+| `virtual` | `boolean \| 'auto'` | `'auto'` | 虚拟滚动模式 |
+| `virtualThreshold` | `number` | `100` | `auto` 模式下启用虚拟滚动的最小数据量 |
+| `virtualScrollBuffer` | `number` | `5` | 虚拟滚动前后缓冲项数 |
+| `itemSize` | `number` | - | 固定项目尺寸，稳定虚拟滚动推荐使用 |
+| `minItemSize` | `number` | - | 最小项目尺寸，用于动态尺寸虚拟滚动（experimental） |
 
-- `state`: 只读的滚动状态对象
-- `methods`: 控制滚动的方法集合
-- `destroy`: 销毁滚动实例的函数
+### 虚拟滚动行为
 
-### 配置选项 (ScrollOptions)
+- `virtual=false`：永不启用虚拟滚动。
+- `virtual=true`：强制启用；必须提供 `itemSize` 或 `minItemSize`，否则抛出明确错误。
+- `virtual='auto'`：仅当 `dataTotal >= virtualThreshold`、内容超出容器且提供了 `itemSize` 或 `minItemSize` 时启用；缺少尺寸配置会回退为非虚拟滚动并输出 warning。
+- 固定尺寸模式（`itemSize`）是稳定能力；动态尺寸模式（`minItemSize` + 测量缓存）仍为 experimental。
 
-| 参数             | 类型                           | 默认值       | 描述                               |
-| ---------------- | ------------------------------ | ------------ | ---------------------------------- |
-| `direction`      | `'vertical'` \| `'horizontal'` | `'vertical'` | 滚动方向                           |
-| `reverse`        | `boolean`                      | `false`      | 是否反向滚动                       |
-| `speed`          | `number`                       | `60`         | 滚动速度（像素/秒）                |
-| `duration`       | `number`                       | `1000`       | 每次滚动动画的持续时间（毫秒）     |
-| `pauseTime`      | `number`                       | `0`          | 每次滚动后的暂停时间（毫秒）       |
-| `hoverPause`     | `boolean`                      | `true`       | 是否在鼠标悬停时暂停               |
-| `wheelScroll`    | `boolean`                      | `true`       | 鼠标悬停暂停时是否允许滚轮手动滚动 |
-| `autoScroll`     | `boolean`                      | `true`       | 是否自动开始滚动                   |
-| `step`           | `number`                       | `0`          | 滚动步长，0表示自动计算            |
-| `forceScrolling` | `boolean`                      | `false`      | 是否强制滚动（即使内容未超出容器） |
+### ScrollMethods
 
-### 状态对象 (ScrollState)
-
-| 属性             | 类型      | 描述         |
-| ---------------- | --------- | ------------ |
-| `isScrolling`    | `boolean` | 是否正在滚动 |
-| `isPaused`       | `boolean` | 是否暂停     |
-| `isHovering`     | `boolean` | 鼠标是否悬停 |
-| `scrollDistance` | `number`  | 滚动距离     |
-| `contentSize`    | `number`  | 内容尺寸     |
-| `containerSize`  | `number`  | 容器尺寸     |
-| `isScrollNeeded` | `boolean` | 是否需要滚动 |
-| `minClones`      | `number`  | 最小克隆数量 |
-
-### 方法对象 (ScrollMethods)
-
-| 方法                     | 描述         |
-| ------------------------ | ------------ |
-| `start()`                | 开始滚动     |
-| `stop()`                 | 停止滚动     |
-| `pause()`                | 暂停滚动     |
-| `resume()`               | 恢复滚动     |
-| `reset()`                | 重置滚动位置 |
-| `forceScroll()`          | 强制开始滚动 |
-| `updateSize()`           | 更新尺寸计算 |
-| `updateOptions(options)` | 更新配置参数 |
-
-### 事件回调 (ScrollEvents)
-
-| 事件          | 参数                                            | 描述             |
-| ------------- | ----------------------------------------------- | ---------------- |
-| `onScroll`    | `(distance: number, direction: string) => void` | 滚动事件回调     |
-| `onItemClick` | `(item: any, index: number) => void`            | 点击项目时的回调 |
+| 方法 | 描述 |
+| --- | --- |
+| `start()` | 开始滚动 |
+| `stop()` | 停止滚动 |
+| `pause()` | 暂停滚动 |
+| `resume()` | 恢复滚动 |
+| `reset()` | 重置滚动位置 |
+| `forceScroll()` | 开启强制滚动并尝试开始滚动 |
+| `updateSize()` | 重新测量容器和内容尺寸 |
+| `updateOptions(options)` | 更新配置 |
+| `setObserver(container, realList)` | 设置尺寸观察器 |
+| `clearObserver()` | 清除尺寸观察器 |
+| `resetObserver()` | 使用当前 DOM 重置尺寸观察器 |
+| `updateItemSizeList(index, size, type?)` | 更新动态尺寸缓存 |
+| `predictItemSize(index, type?)` | 预测项目尺寸 |
+| `getVirtualCloneRange()` | 获取虚拟克隆列表的闭区间范围 `{ startIndex, endIndex }` |
 
 ## 基本用法
 
-也可以查看Github上的[exmaples](https://github.com/yeyunwen/seamless-scroll/blob/main/examples/core/index.html)。
-
-```js
+```ts
 import { createSeamlessScroll } from "@seamless-scroll/core";
 
-// 获取DOM元素
-const container = document.querySelector(".scroll-container");
-const content = document.querySelector(".scroll-content");
-const realList = document.querySelector(".real-list");
+const instance = createSeamlessScroll(container, content, realList, {
+  dataTotal: items.length,
+  direction: "vertical",
+  speed: 60,
+  itemSize: 40,
+});
 
-// 创建无缝滚动实例
-const { state, methods, destroy } = createSeamlessScroll(
-  container,
-  content,
-  realList,
-  {
-    direction: "vertical",
-    speed: 60,
-    hoverPause: true,
-  },
-  {
-    onScroll: (distance, direction) => {
-      console.log(`滚动距离: ${distance}`);
-    },
-    onItemClick: (item, index) => {
-      console.log(`点击了第 ${index} 项`, item);
-    },
-  },
-);
-
-// 控制滚动
-methods.start(); // 开始滚动
-methods.pause(); // 暂停滚动
-methods.resume(); // 恢复滚动
-methods.stop(); // 停止滚动
-
-// 访问状态
-console.log("内容尺寸:", state.contentSize);
-console.log("容器尺寸:", state.containerSize);
-console.log("是否需要滚动:", state.isScrollNeeded);
-
-// 更新配置
-methods.updateOptions({ speed: 100 });
-
-// 销毁实例
-destroy();
+instance.methods.pause();
+instance.methods.resume();
+instance.methods.updateOptions({ speed: 100 });
+instance.destroy();
 ```
 
 ## 许可证

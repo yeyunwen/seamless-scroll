@@ -8,19 +8,31 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "skipLibCheck": true,
     "outDir": "./dist",
-    "rootDir": ".",
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "composite": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "..",
+    "paths": {
+      "@seamless-scroll/*": [
+        "packages/*/src"
+      ]
+    }
   },
-  "include": ["demo/**/*.tsx", "demo/**/*.vue"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "demo/**/*.tsx",
+    "demo/**/*.vue",
+    "demo/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

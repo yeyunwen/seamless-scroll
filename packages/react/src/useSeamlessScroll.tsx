@@ -52,7 +52,9 @@ export function useSeamlessScroll<T = any>(props: HooksProps) {
       dataTotal: props.dataTotal ?? 0,
       itemSize: props.itemSize ?? undefined,
       minItemSize: props.minItemSize ?? undefined,
-      virtualScrollBuffer: props.virtualScrollBuffer ?? 10,
+      virtual: props.virtual ?? "auto",
+      virtualThreshold: props.virtualThreshold ?? 100,
+      virtualScrollBuffer: props.virtualScrollBuffer ?? 5,
     };
   }, [
     props.direction,
@@ -67,6 +69,8 @@ export function useSeamlessScroll<T = any>(props: HooksProps) {
     props.dataTotal,
     props.itemSize,
     props.minItemSize,
+    props.virtual,
+    props.virtualThreshold,
     props.virtualScrollBuffer,
   ]);
 
@@ -151,26 +155,25 @@ export function useSeamlessScroll<T = any>(props: HooksProps) {
   // 暴露方法
   const methods = useMemo<ScrollMethods>(() => {
     return {
-      start: () => instanceRef.current!.methods.start(),
-      stop: () => instanceRef.current!.methods.stop(),
-      pause: () => instanceRef.current!.methods.pause(),
-      resume: () => instanceRef.current!.methods.resume(),
-      reset: () => instanceRef.current!.methods.reset(),
-      forceScroll: () => instanceRef.current!.methods.forceScroll(),
-      updateSize: () => instanceRef.current!.methods.updateSize(),
+      start: () => instanceRef.current?.methods.start(),
+      stop: () => instanceRef.current?.methods.stop(),
+      pause: () => instanceRef.current?.methods.pause(),
+      resume: () => instanceRef.current?.methods.resume(),
+      reset: () => instanceRef.current?.methods.reset(),
+      forceScroll: () => instanceRef.current?.methods.forceScroll(),
+      updateSize: () => instanceRef.current?.methods.updateSize(),
       updateOptions: (newOptions: Partial<ScrollOptions>) =>
-        instanceRef.current!.methods.updateOptions(newOptions),
+        instanceRef.current?.methods.updateOptions(newOptions),
       setObserver: (container, realList) =>
-        instanceRef.current!.methods.setObserver(container, realList),
-      clearObserver: () => instanceRef.current!.methods.clearObserver(),
-      resetObserver: () => instanceRef.current!.methods.resetObserver(),
+        instanceRef.current?.methods.setObserver(container, realList),
+      clearObserver: () => instanceRef.current?.methods.clearObserver(),
+      resetObserver: () => instanceRef.current?.methods.resetObserver(),
       updateItemSizeList: (index: number, size: number, type?: string) =>
-        instanceRef.current!.methods.updateItemSizeList(index, size, type),
+        instanceRef.current?.methods.updateItemSizeList(index, size, type),
       predictItemSize: (index: number, type?: string) =>
-        instanceRef.current!.methods.predictItemSize(index, type) ?? 0,
-      getVirtualCloneRange: () => {
-        return instanceRef.current!.methods.getVirtualCloneRange();
-      },
+        instanceRef.current?.methods.predictItemSize(index, type) ?? 0,
+      getVirtualCloneRange: () =>
+        instanceRef.current?.methods.getVirtualCloneRange() ?? { startIndex: 0, endIndex: -1 },
     };
   }, [instanceRef]);
 
