@@ -299,8 +299,11 @@ function InnerSeamlessScroll<T>(
       itemElements.current.clear();
     } else {
       timer = setTimeout(() => {
+        // 数据变化时，重置滚动状态并更新尺寸
         methods.reset();
+        // 等待 DOM 更新后重新计算尺寸
         methods.updateSize();
+        // 观察最新的 DOM
         methods.resetObserver();
       }, 0);
     }

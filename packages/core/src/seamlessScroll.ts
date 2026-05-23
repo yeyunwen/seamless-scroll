@@ -194,6 +194,10 @@ export const createSeamlessScroll = (
     const containerSize = getBaseContainerSize();
     const contentSize = getBaseContentSize();
 
+    // 自动检测是否应该启用虚拟滚动：
+    // - virtual=false 时禁用
+    // - virtual=true 时强制启用，并要求 itemSize 或 minItemSize
+    // - virtual=auto 时，只有数据量达到阈值、内容超出容器且存在尺寸配置才启用
     const isVirtualized = shouldVirtualize(contentSize, containerSize);
 
     setState({
@@ -205,6 +209,7 @@ export const createSeamlessScroll = (
       contentSize: getContentSize(),
     });
 
+    // 如果启用了虚拟滚动，更新可见项目
     if (isVirtualized) {
       updateVisibleItems();
     } else if (
@@ -275,14 +280,17 @@ export const createSeamlessScroll = (
     const currentRealList = domRefs.getRealList();
     if (!currentRealList) return;
 
+    // 应用最小尺寸约束
     const minSize = config.minItemSize || 0;
     const constrainedSize = Math.max(size, minSize);
 
+    // 更新项目尺寸列表；创建新数组，避免直接修改 state.itemSizeList
     const nextItemSizeList = [...state.itemSizeList];
     const oldSize = nextItemSizeList[index];
     const isNewMeasurement = !oldSize || oldSize <= 0;
     nextItemSizeList[index] = constrainedSize;
 
+    // 更新平均尺寸统计
     const totalMeasuredItems = isNewMeasurement
       ? state.totalMeasuredItems + 1
       : state.totalMeasuredItems;
@@ -292,6 +300,7 @@ export const createSeamlessScroll = (
         ? state.averageSize + (constrainedSize - oldSize) / totalMeasuredItems
         : constrainedSize;
 
+    // 更新类型统计；创建新对象，避免直接修改 state.typeSizes
     const typeSizes = { ...state.typeSizes };
     if (type) {
       const previous = typeSizes[type] ?? { total: 0, count: 0, average: 0 };
@@ -302,12 +311,14 @@ export const createSeamlessScroll = (
       typeSizes[type] = { total, count, average: count > 0 ? total / count : 0 };
     }
 
+    // 更新尺寸缓存相关状态
     setState({
       itemSizeList: nextItemSizeList,
       averageSize,
       totalMeasuredItems,
       typeSizes,
     });
+    // 更新上次估计的内容尺寸
     setState({ contentSize: getContentSize() });
   };
 
